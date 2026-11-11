@@ -1,0 +1,5 @@
+         Materialized view "public.mv_top"
+ Column |  Type   | Collation | Nullable | Default 
+--------+---------+-----------+----------+---------
+ id     | integer |           |          | 
+

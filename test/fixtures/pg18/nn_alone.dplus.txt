@@ -1,0 +1,9 @@
+                                        Table "public.nn_alone"
+ Column |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ a      | integer |           |          |         | plain   |             |              | 
+ b      | integer |           | not null |         | plain   |             |              | 
+Not-null constraints:
+    "nn_alone_b_not_null" NOT NULL "b" NO INHERIT
+Access method: heap
+

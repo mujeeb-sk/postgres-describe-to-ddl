@@ -1,0 +1,13 @@
+                           Foreign table "public.ft_csv"
++--------+---------+-----------+----------+-------------+-------------------------+
+| Column |  Type   | Collation | Nullable |   Default   |       FDW options       |
++--------+---------+-----------+----------+-------------+-------------------------+
+| id     | integer |           | not null |             | (force_not_null 'true') |
+| name|x | text    |           |          |             |                         |
+| note   | text    | C         |          | 'x|y'::text |                         |
++--------+---------+-----------+----------+-------------+-------------------------+
+Check constraints:
+    "ft_chk" CHECK (id > 0)
+Server: file_srv
+FDW options: (filename '/tmp/x.csv', format 'csv', delimiter '|', header 'true')
+

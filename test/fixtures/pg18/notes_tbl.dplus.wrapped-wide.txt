@@ -1,0 +1,17 @@
+                                           Table "public.notes_tbl"
+  Column   | Type  | Collation | Nullable |  Default   | Storage | Compression | Stats target |  Description  
+-----------+-------+-----------+----------+------------+---------+-------------+--------------+---------------
+ id        | integ.|           |          |            | plain   |             |              | first line   +
+           |.er    |           |          |            |         |             |              |              +
+           |       |           |          |            |         |             |              |   indented th.
+           |       |           |          |            |         |             |              |.ird line
+ body      | text  |           |          |            | extende.|             |              | Ends with a f.
+           |       |           |          |            |.d       |             |              |.ull stop.
+ a rather .| text  |           |          | 'a default.| extende.|             |              | 
+.long colu.|       |           |          |. that is l.|.d       |             |              | 
+.mn name   |       |           |          |.ong enough.|         |             |              | 
+           |       |           |          |. to be wra.|         |             |              | 
+           |       |           |          |.pped'::tex.|         |             |              | 
+           |       |           |          |.t          |         |             |              | 
+Access method: heap
+

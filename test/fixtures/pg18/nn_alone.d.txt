@@ -1,0 +1,6 @@
+              Table "public.nn_alone"
+ Column |  Type   | Collation | Nullable | Default 
+--------+---------+-----------+----------+---------
+ a      | integer |           |          | 
+ b      | integer |           | not null | 
+

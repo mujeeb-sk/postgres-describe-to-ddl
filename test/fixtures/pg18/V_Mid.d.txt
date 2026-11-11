@@ -1,0 +1,5 @@
+                View "public.V Mid"
+ Column |  Type   | Collation | Nullable | Default 
+--------+---------+-----------+----------+---------
+ id     | integer |           |          | 
+

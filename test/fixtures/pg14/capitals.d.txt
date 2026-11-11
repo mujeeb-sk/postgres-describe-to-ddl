@@ -1,0 +1,10 @@
+                     Table "public.capitals"
+   Column   |     Type     | Collation | Nullable |   Default    
+------------+--------------+-----------+----------+--------------
+ name       | text         |           | not null | 
+ population | real         |           |          | 
+ state      | character(2) |           |          | 'XX'::bpchar
+Check constraints:
+    "pop_check" CHECK (population >= 0::double precision)
+Inherits: cities
+

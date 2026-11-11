@@ -1,0 +1,12 @@
+                Table "public.towns"
+   Column   | Type | Collation | Nullable | Default 
+------------+------+-----------+----------+---------
+ name       | text |           | not null | 
+ population | real |           |          | 
+ msg        | text |           |          | 
+ mayor      | text |           |          | 
+Check constraints:
+    "pop_check" CHECK (population >= 0::double precision)
+Inherits: cities,
+          app.audit_log
+

@@ -1,0 +1,8 @@
+         Partitioned table "public.hashed"
+ Column |  Type   | Collation | Nullable | Default 
+--------+---------+-----------+----------+---------
+ id     | integer |           |          | 
+ data   | text    |           |          | 
+Partition key: HASH (id)
+Number of partitions: 2 (Use \d+ to list them.)
+

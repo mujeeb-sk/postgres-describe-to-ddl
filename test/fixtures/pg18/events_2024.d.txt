@@ -1,0 +1,12 @@
+               Table "public.events_2024"
+   Column    |  Type   | Collation | Nullable | Default 
+-------------+---------+-----------+----------+---------
+ id          | integer |           | not null | 
+ customer_id | integer |           |          | 
+ at          | date    |           | not null | 
+Partition of: events FOR VALUES FROM ('2024-01-01') TO ('2025-01-01')
+Foreign-key constraints:
+    TABLE "events" CONSTRAINT "events_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES app.customers(id)
+Triggers:
+    events_trg AFTER INSERT ON events_2024 FOR EACH ROW EXECUTE FUNCTION trg_fn(), ON TABLE events
+

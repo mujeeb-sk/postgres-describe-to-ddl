@@ -1,0 +1,15 @@
+                                     View "public.v_cust"
+ Column |       Type        | Collation | Nullable | Default | Storage  |     Description     
+--------+-------------------+-----------+----------+---------+----------+---------------------
+ id     | integer           |           |          |         | plain    | 
+ email  | character varying |           |          |         | extended | view column comment
+View definition:
+ SELECT customers.id,
+    customers.email
+   FROM app.customers
+  WHERE customers.score > 0::numeric
+UNION ALL
+ SELECT 0 AS id,
+    'none'::character varying AS email;
+Options: security_barrier=true
+

@@ -1,0 +1,7 @@
+                                        Table "app.audit_log"
+ Column | Type | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+--------+------+-----------+----------+---------+----------+-------------+--------------+-------------
+ msg    | text |           |          |         | extended |             |              | 
+Child tables: towns
+Access method: heap
+

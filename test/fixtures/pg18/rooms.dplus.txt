@@ -1,0 +1,14 @@
+                                            Table "public.rooms"
+  Column  |   Type    | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+----------+-----------+-----------+----------+---------+----------+-------------+--------------+-------------
+ id       | integer   |           | not null |         | plain    |             |              | 
+ valid_at | daterange |           | not null |         | extended |             |              | 
+Indexes:
+    "rooms_pk" PRIMARY KEY (id, valid_at WITHOUT OVERLAPS)
+Referenced by:
+    TABLE "room_names" CONSTRAINT "room_names_fk" FOREIGN KEY (id, PERIOD valid_at) REFERENCES rooms(id, PERIOD valid_at)
+Not-null constraints:
+    "rooms_id_not_null" NOT NULL "id"
+    "rooms_valid_at_not_null" NOT NULL "valid_at"
+Access method: heap
+

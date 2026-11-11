@@ -1,0 +1,4 @@
+CREATE TABLE public.nn_part_2 PARTITION OF nn_part (
+    c WITH OPTIONS CONSTRAINT own_nn NOT NULL
+)
+FOR VALUES IN (2);

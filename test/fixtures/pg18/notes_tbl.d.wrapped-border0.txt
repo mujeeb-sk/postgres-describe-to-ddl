@@ -1,0 +1,9 @@
+                  Table "public.notes_tbl"
+   Column      Type   Collation Nullable      Default       
+------------- ------- --------- -------- ------------------
+id            integer                    
+body          text                       
+a rather long.text                       'a default that is.
+ column name                              long enough to be.
+                                          wrapped'::text
+

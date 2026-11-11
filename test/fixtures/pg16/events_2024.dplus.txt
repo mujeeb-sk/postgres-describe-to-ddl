@@ -1,0 +1,14 @@
+                                         Table "public.events_2024"
+   Column    |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+-------------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ id          | integer |           | not null |         | plain   |             |              | 
+ customer_id | integer |           |          |         | plain   |             |              | 
+ at          | date    |           | not null |         | plain   |             |              | 
+Partition of: events FOR VALUES FROM ('2024-01-01') TO ('2025-01-01')
+Partition constraint: ((at IS NOT NULL) AND (at >= '2024-01-01'::date) AND (at < '2025-01-01'::date))
+Foreign-key constraints:
+    TABLE "events" CONSTRAINT "events_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES app.customers(id)
+Triggers:
+    events_trg AFTER INSERT ON events_2024 FOR EACH ROW EXECUTE FUNCTION trg_fn(), ON TABLE events
+Access method: heap
+

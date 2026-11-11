@@ -1,0 +1,13 @@
+          Table "public.measurements_2024"
+ Column  |  Type   | Collation | Nullable | Default 
+---------+---------+-----------+----------+---------
+ id      | bigint  |           | not null | 
+ logdate | date    |           | not null | 
+ region  | text    |           |          | 
+ val     | integer |           |          | 0
+Partition of: measurements FOR VALUES FROM ('2024-01-01') TO ('2025-01-01')
+Indexes:
+    "measurements_2024_pkey" PRIMARY KEY, btree (id, logdate)
+    "measurements_2024_region_idx" btree (region)
+    "measurements_2024_val_idx" btree (val)
+

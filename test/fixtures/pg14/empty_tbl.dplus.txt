@@ -1,0 +1,5 @@
+                                      Table "public.empty_tbl"
+ Column | Type | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+--------+------+-----------+----------+---------+---------+-------------+--------------+-------------
+Access method: heap
+

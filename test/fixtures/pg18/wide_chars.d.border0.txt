@@ -1,0 +1,9 @@
+            Table "public.wide_chars"
+Column  Type   Collation Nullable     Default     
+------ ------- --------- -------- ---------------
+id     integer                    
+名前   text                       'x|y'::text
+数量   integer           not null 
+note   text                       '日本|語'::text
+face   text                       '😀|x'::text
+

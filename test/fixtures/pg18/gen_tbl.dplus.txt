@@ -1,0 +1,10 @@
+                                                      Table "public.gen_tbl"
+ Column |  Type   | Collation | Nullable |              Default               | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+------------------------------------+---------+-------------+--------------+-------------
+ a      | integer |           |          |                                    | plain   |             |              | 
+ b      | integer |           |          | generated always as (a * 2)        | plain   |             |              | 
+ c      | integer |           |          | generated always as (a + 1) stored | plain   |             |              | 
+Check constraints:
+    "gen_chk" CHECK (a > 0) NOT ENFORCED
+Access method: heap
+

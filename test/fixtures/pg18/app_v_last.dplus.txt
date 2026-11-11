@@ -1,0 +1,8 @@
+                             View "app.v_last"
+ Column |  Type   | Collation | Nullable | Default | Storage | Description 
+--------+---------+-----------+----------+---------+---------+-------------
+ id     | integer |           |          |         | plain   | 
+View definition:
+ SELECT id
+   FROM mv_top;
+

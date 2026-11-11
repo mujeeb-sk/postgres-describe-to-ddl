@@ -1,0 +1,19 @@
+                                                       Table "public.nn_child"
+ Column |  Type   | Collation | Nullable |                Default                | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------------------------------------+---------+-------------+--------------+-------------
+ a      | integer |           | not null |                                       | plain   |             |              | 
+ c      | integer |           | not null |                                       | plain   |             |              | 
+ d      | integer |           | not null |                                       | plain   |             |              | 
+ E e    | integer |           | not null |                                       | plain   |             |              | 
+ id     | integer |           | not null | nextval('nn_parent_id_seq'::regclass) | plain   |             |              | 
+ z      | integer |           | not null |                                       | plain   |             |              | 
+Not-null constraints:
+    "nn_child_a_not_null" NOT NULL "a" (local, inherited)
+    "c_nn" NOT NULL "c" (inherited)
+    "nn_parent_d_not_null" NOT NULL "d" (inherited)
+    "Odd "nn"" NOT NULL "E e" (inherited)
+    "id_nn" NOT NULL "id" (inherited)
+    "nn_child_z_not_null" NOT NULL "z"
+Inherits: nn_parent
+Access method: heap
+

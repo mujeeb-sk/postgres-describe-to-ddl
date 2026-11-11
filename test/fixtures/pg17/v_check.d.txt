@@ -1,0 +1,8 @@
+                View "public.v_check"
+  Column  |  Type   | Collation | Nullable | Default 
+----------+---------+-----------+----------+---------
+ order_id | bigint  |           |          | 
+ qty      | integer |           |          | 
+Triggers:
+    v_check_ins INSTEAD OF INSERT ON v_check FOR EACH ROW EXECUTE FUNCTION view_ins_fn()
+

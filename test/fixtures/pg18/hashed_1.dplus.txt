@@ -1,0 +1,10 @@
+                                         Foreign table "public.hashed_1"
+ Column |  Type   | Collation | Nullable | Default |     FDW options     | Storage  | Stats target | Description 
+--------+---------+-----------+----------+---------+---------------------+----------+--------------+-------------
+ id     | integer |           |          |         |                     | plain    |              | 
+ data   | text    |           |          |         | (force_null 'true') | extended |              | 
+Partition of: hashed FOR VALUES WITH (modulus 2, remainder 1)
+Partition constraint: satisfies_hash_partition('21871'::oid, 2, 1, id)
+Server: file_srv
+FDW options: (filename '/dev/null')
+

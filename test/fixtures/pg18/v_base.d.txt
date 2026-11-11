@@ -1,0 +1,6 @@
+                       View "public.v_base"
+ Column |          Type          | Collation | Nullable | Default 
+--------+------------------------+-----------+----------+---------
+ id     | integer                |           |          | 
+ email  | character varying(255) |           |          | 
+

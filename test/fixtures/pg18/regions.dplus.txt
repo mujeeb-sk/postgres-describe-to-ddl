@@ -1,0 +1,8 @@
+                                  Partitioned table "public.regions"
+ Column | Type | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+--------+------+-----------+----------+---------+----------+-------------+--------------+-------------
+ code   | text |           |          |         | extended |             |              | 
+ name   | text |           |          |         | extended |             |              | 
+Partition key: LIST (code)
+Partitions: regions_eu FOR VALUES IN ('eu', 'uk', 'it''s')
+

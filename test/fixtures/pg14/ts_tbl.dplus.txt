@@ -1,0 +1,15 @@
+                                           Table "public.ts_tbl"
+ Column |   Type    | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+--------+-----------+-----------+----------+---------+----------+-------------+--------------+-------------
+ a      | integer   |           |          |         | plain    |             |              | 
+ b      | text      |           | not null |         | extended |             |              | 
+ c      | tstzrange |           |          |         | extended |             |              | 
+Indexes:
+    "ts_tbl_pkey" PRIMARY KEY, btree (b), tablespace "Fast Space"
+    "ts_tbl_a_idx" btree (a) WHERE a > 0, tablespace "Fast Space"
+    "ts_tbl_b_idx" btree (b) CLUSTER, tablespace "Fast Space"
+    "ts_tbl_excl" EXCLUDE USING gist (c WITH &&) WHERE (a > 10), tablespace "Fast Space"
+Tablespace: "Fast Space"
+Access method: heap
+Options: parallel_workers=2, toast.autovacuum_enabled=false
+

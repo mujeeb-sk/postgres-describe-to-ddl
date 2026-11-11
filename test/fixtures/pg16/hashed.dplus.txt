@@ -1,0 +1,9 @@
+                                    Partitioned table "public.hashed"
+ Column |  Type   | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+----------+-------------+--------------+-------------
+ id     | integer |           |          |         | plain    |             |              | 
+ data   | text    |           |          |         | extended |             |              | 
+Partition key: HASH (id)
+Partitions: hashed_0 FOR VALUES WITH (modulus 2, remainder 0),
+            hashed_1 FOR VALUES WITH (modulus 2, remainder 1), FOREIGN
+

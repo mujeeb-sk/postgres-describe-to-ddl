@@ -1,0 +1,8 @@
+                                         Table "public.gen_ref"
+ Column |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ a      | integer |           |          |         | plain   |             |              | 
+Foreign-key constraints:
+    "gen_ref_fk" FOREIGN KEY (a) REFERENCES app.customers(id) NOT ENFORCED
+Access method: heap
+

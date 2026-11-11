@@ -1,0 +1,13 @@
+                                           Table "public.nnd"
+ Column |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ a      | integer |           |          |         | plain   |             |              | 
+ b      | integer |           |          |         | plain   |             |              | 
+ c      | integer |           |          |         | plain   |             |              | 
+Indexes:
+    "nnd_a_key" UNIQUE CONSTRAINT, btree (a) INCLUDE (b) NULLS NOT DISTINCT
+    "nnd_b_idx" UNIQUE, btree (b) NULLS NOT DISTINCT
+Publications:
+    "pub2" (a, b) WHERE (a > 0)
+Access method: heap
+

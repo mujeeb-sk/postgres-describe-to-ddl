@@ -1,0 +1,413 @@
+             Table "app.audit_log"
+ Column | Type | Collation | Nullable | Default 
+--------+------+-----------+----------+---------
+ msg    | text |           |          | 
+Number of child tables: 1 (Use \d+ to list them.)
+
+
+                                             Table "app.customers"
+    Column    |            Type             | Collation | Nullable |                  Default                  
+--------------+-----------------------------+-----------+----------+-------------------------------------------
+ id           | integer                     |           | not null | nextval('app.customers_id_seq'::regclass)
+ email        | character varying(255)      |           | not null | 
+ name         | text                        | C         |          | 'anon'::text
+ Display Name | text                        |           |          | 
+ user         | text                        |           |          | 
+ mood         | app.mood                    |           |          | 'ok'::app.mood
+ score        | numeric(10,2)               |           |          | 
+ tags         | text[]                      |           |          | '{}'::text[]
+ created      | timestamp(3) with time zone |           | not null | now()
+ doc          | jsonb                       |           |          | 
+ code         | character(3)                |           |          | 
+ b            | bytea                       |           |          | 
+ note         | text                        |           |          | 'a | b'::text
+ multi        | text                        |           |          | 'line one                                +
+              |                             |           |          | line two'::text
+ pos          | posint                      |           |          | 
+Indexes:
+    "customers_pkey" PRIMARY KEY, btree (id) CLUSTER
+    "Customers Mixed" btree ("Display Name" text_pattern_ops)
+    "customers_code_uidx" UNIQUE, btree (code) INCLUDE (name) WITH (fillfactor='70')
+    "customers_created_partial" btree (created DESC NULLS LAST) WHERE score > 10::numeric
+    "customers_doc_gin" gin (doc jsonb_path_ops)
+    "customers_email_key" UNIQUE CONSTRAINT, btree (email)
+    "customers_lower_name_idx" btree (lower(name))
+Check constraints:
+    "customers_score_check" CHECK (score >= 0::numeric)
+Referenced by:
+    TABLE "events" CONSTRAINT "events_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES app.customers(id)
+    TABLE "orders" CONSTRAINT "orders_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES app.customers(id) ON DELETE CASCADE
+    TABLE "orders" CONSTRAINT "orders_referrer_fk" FOREIGN KEY (referrer_id) REFERENCES app.customers(id) MATCH FULL ON UPDATE SET NULL
+Policies:
+    POLICY "P Update" FOR UPDATE
+      USING (
+CASE
+    WHEN (score > (5)::numeric) THEN true
+    ELSE false
+END)
+    POLICY "p_all" AS RESTRICTIVE
+      USING (true)
+      WITH CHECK (((email)::text <> ''::text))
+    POLICY "p_sel" FOR SELECT
+      TO Bob,alice
+      USING ((score > (0)::numeric))
+Statistics objects:
+    "app.cust_stats" (ndistinct, dependencies) ON email, name FROM app.customers
+    "app.cust_stats_all" ON email, code FROM app.customers; STATISTICS 50
+Rules:
+    cust_rule AS
+    ON DELETE TO app.customers
+   WHERE old.id < 0 DO INSTEAD NOTHING
+Disabled rules:
+    cust_rule_dis AS
+    ON UPDATE TO app.customers
+   WHERE old.id < '-10'::integer DO  INSERT INTO app.audit_log (msg)
+  VALUES ('updated'::text)
+Publications:
+    "pub1"
+Triggers:
+    cust_ctrg AFTER INSERT ON app.customers DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION trg_fn()
+    cust_trg BEFORE INSERT OR UPDATE ON app.customers FOR EACH ROW EXECUTE FUNCTION trg_fn()
+Disabled user triggers:
+    cust_trg_dis AFTER DELETE ON app.customers FOR EACH ROW WHEN (old.id > 0) EXECUTE FUNCTION trg_fn()
+Triggers firing always:
+    cust_trg_always AFTER UPDATE OF email ON app.customers FOR EACH STATEMENT EXECUTE FUNCTION trg_fn()
+Triggers firing on replica only:
+    cust_trg_replica AFTER TRUNCATE ON app.customers FOR EACH STATEMENT EXECUTE FUNCTION trg_fn()
+
+
+                                       Table "public.orders"
+   Column    |   Type    | Collation | Nullable |                      Default                      
+-------------+-----------+-----------+----------+---------------------------------------------------
+ order_id    | bigint    |           | not null | generated always as identity
+ customer_id | integer   |           | not null | 
+ qty         | integer   |           | not null | 1
+ price       | numeric   |           | not null | 
+ total       | numeric   |           |          | generated always as (qty::numeric * price) stored
+ during      | tstzrange |           |          | 
+ referrer_id | integer   |           |          | 
+Indexes:
+    "orders_pkey" PRIMARY KEY, btree (order_id) DEFERRABLE INITIALLY DEFERRED
+    "no_overlap" EXCLUDE USING gist (customer_id WITH =, during WITH &&)
+Check constraints:
+    "orders_case_check" CHECK (
+CASE
+    WHEN qty > 10 THEN price < 100::numeric
+    ELSE true
+END)
+    "orders_qty_check" CHECK (qty > 0) NO INHERIT
+    "price_pos" CHECK (price > 0::numeric) NOT VALID
+Foreign-key constraints:
+    "orders_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES app.customers(id) ON DELETE CASCADE
+    "orders_referrer_fk" FOREIGN KEY (referrer_id) REFERENCES app.customers(id) MATCH FULL ON UPDATE SET NULL
+
+
+                                        Table "Mixed Case.Weird Table"
+   Column   |  Type   | Collation | Nullable |                            Default                             
+------------+---------+-----------+----------+----------------------------------------------------------------
+ Id         | integer |           | not null | generated by default as identity
+ select     | integer |           |          | 
+ a"b        | text    |           |          | 
+ x          | bigint  |           |          | nextval('shared_seq'::regclass)
+ Serial Col | integer |           | not null | nextval('"Mixed Case"."Weird Table_Serial Col_seq"'::regclass)
+Indexes:
+    "Weird Table_select_x_key" UNIQUE CONSTRAINT, btree ("select", x) DEFERRABLE
+    "weird_replident" UNIQUE, btree ("Id") REPLICA IDENTITY
+
+
+      Partitioned table "public.measurements"
+ Column  |  Type   | Collation | Nullable | Default 
+---------+---------+-----------+----------+---------
+ id      | bigint  |           | not null | 
+ logdate | date    |           | not null | 
+ region  | text    |           |          | 
+ val     | integer |           |          | 0
+Partition key: RANGE (logdate)
+Indexes:
+    "measurements_pkey" PRIMARY KEY, btree (id, logdate)
+    "measurements_region_idx" btree (region)
+Number of partitions: 3 (Use \d+ to list them.)
+
+
+          Table "public.measurements_2024"
+ Column  |  Type   | Collation | Nullable | Default 
+---------+---------+-----------+----------+---------
+ id      | bigint  |           | not null | 
+ logdate | date    |           | not null | 
+ region  | text    |           |          | 
+ val     | integer |           |          | 0
+Partition of: measurements FOR VALUES FROM ('2024-01-01') TO ('2025-01-01')
+Indexes:
+    "measurements_2024_pkey" PRIMARY KEY, btree (id, logdate)
+    "measurements_2024_region_idx" btree (region)
+    "measurements_2024_val_idx" btree (val)
+
+
+    Partitioned table "public.measurements_2025"
+ Column  |  Type   | Collation | Nullable | Default 
+---------+---------+-----------+----------+---------
+ id      | bigint  |           | not null | 
+ logdate | date    |           | not null | 
+ region  | text    |           |          | 
+ val     | integer |           |          | 0
+Partition of: measurements FOR VALUES FROM ('2025-01-01') TO ('2026-01-01')
+Partition key: RANGE (logdate)
+Indexes:
+    "measurements_2025_pkey" PRIMARY KEY, btree (id, logdate)
+    "measurements_2025_region_idx" btree (region)
+Number of partitions: 1 (Use \d+ to list them.)
+
+
+        Table "public.measurements_2025_h1"
+ Column  |  Type   | Collation | Nullable | Default 
+---------+---------+-----------+----------+---------
+ id      | bigint  |           | not null | 
+ logdate | date    |           | not null | 
+ region  | text    |           |          | 
+ val     | integer |           |          | 0
+Partition of: measurements_2025 FOR VALUES FROM ('2025-01-01') TO ('2025-07-01')
+Indexes:
+    "measurements_2025_h1_pkey" PRIMARY KEY, btree (id, logdate)
+    "measurements_2025_h1_region_idx" btree (region)
+
+
+       Partitioned table "public.regions"
+ Column | Type | Collation | Nullable | Default 
+--------+------+-----------+----------+---------
+ code   | text |           |          | 
+ name   | text |           |          | 
+Partition key: LIST (code)
+Number of partitions: 1 (Use \d+ to list them.)
+
+
+           Table "public.regions_eu"
+ Column | Type | Collation | Nullable | Default 
+--------+------+-----------+----------+---------
+ code   | text |           |          | 
+ name   | text |           |          | 
+Partition of: regions FOR VALUES IN ('eu', 'uk', 'it''s')
+
+
+          Table "public.measurements_def"
+ Column  |  Type   | Collation | Nullable | Default 
+---------+---------+-----------+----------+---------
+ id      | bigint  |           | not null | 
+ logdate | date    |           | not null | 
+ region  | text    |           | not null | 
+ val     | integer |           |          | 42
+Partition of: measurements DEFAULT
+Indexes:
+    "measurements_def_pkey" PRIMARY KEY, btree (id, logdate)
+    "measurements_def_region_idx" btree (region)
+
+
+         Partitioned table "public.hashed"
+ Column |  Type   | Collation | Nullable | Default 
+--------+---------+-----------+----------+---------
+ id     | integer |           |          | 
+ data   | text    |           |          | 
+Partition key: HASH (id)
+Number of partitions: 2 (Use \d+ to list them.)
+
+
+              Table "public.hashed_0"
+ Column |  Type   | Collation | Nullable | Default 
+--------+---------+-----------+----------+---------
+ id     | integer |           |          | 
+ data   | text    |           |          | 
+Partition of: hashed FOR VALUES WITH (modulus 2, remainder 0)
+
+
+                     Foreign table "public.hashed_1"
+ Column |  Type   | Collation | Nullable | Default |     FDW options     
+--------+---------+-----------+----------+---------+---------------------
+ id     | integer |           |          |         | 
+ data   | text    |           |          |         | (force_null 'true')
+Partition of: hashed FOR VALUES WITH (modulus 2, remainder 1)
+Server: file_srv
+FDW options: (filename '/dev/null')
+
+
+           Partitioned table "public.events"
+   Column    |  Type   | Collation | Nullable | Default 
+-------------+---------+-----------+----------+---------
+ id          | integer |           | not null | 
+ customer_id | integer |           |          | 
+ at          | date    |           | not null | 
+Partition key: RANGE (at)
+Foreign-key constraints:
+    "events_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES app.customers(id)
+Triggers:
+    events_trg AFTER INSERT ON events FOR EACH ROW EXECUTE FUNCTION trg_fn()
+Number of partitions: 1 (Use \d+ to list them.)
+
+
+               Table "public.events_2024"
+   Column    |  Type   | Collation | Nullable | Default 
+-------------+---------+-----------+----------+---------
+ id          | integer |           | not null | 
+ customer_id | integer |           |          | 
+ at          | date    |           | not null | 
+Partition of: events FOR VALUES FROM ('2024-01-01') TO ('2025-01-01')
+Foreign-key constraints:
+    TABLE "events" CONSTRAINT "events_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES app.customers(id)
+Triggers:
+    events_trg AFTER INSERT ON events_2024 FOR EACH ROW EXECUTE FUNCTION trg_fn(), ON TABLE events
+
+
+               Table "public.cities"
+   Column   | Type | Collation | Nullable | Default 
+------------+------+-----------+----------+---------
+ name       | text |           | not null | 
+ population | real |           |          | 
+Check constraints:
+    "pop_check" CHECK (population >= 0::double precision)
+Number of child tables: 3 (Use \d+ to list them.)
+
+
+                     Table "public.capitals"
+   Column   |     Type     | Collation | Nullable |   Default    
+------------+--------------+-----------+----------+--------------
+ name       | text         |           | not null | 
+ population | real         |           |          | 
+ state      | character(2) |           |          | 'XX'::bpchar
+Check constraints:
+    "pop_check" CHECK (population >= 0::double precision)
+Inherits: cities
+
+
+                Table "public.towns"
+   Column   | Type | Collation | Nullable | Default 
+------------+------+-----------+----------+---------
+ name       | text |           | not null | 
+ population | real |           |          | 
+ msg        | text |           |          | 
+ mayor      | text |           |          | 
+Check constraints:
+    "pop_check" CHECK (population >= 0::double precision)
+Inherits: cities,
+          app.audit_log
+
+
+               Table "public.people"
+ Column |  Type   | Collation | Nullable | Default 
+--------+---------+-----------+----------+---------
+ name   | text    |           | not null | 
+ age    | integer |           | not null | 0
+Indexes:
+    "people_pkey" PRIMARY KEY, btree (name)
+Typed table of type: person_t
+
+
+                  Unlogged table "public.cache_tbl"
+ Column  |           Type           | Collation | Nullable | Default 
+---------+--------------------------+-----------+----------+---------
+ k       | text                     |           | not null | 
+ v       | text                     |           |          | 
+ expires | timestamp with time zone |           |          | 
+ parent  | text                     |           |          | 
+Indexes:
+    "cache_tbl_pkey" PRIMARY KEY, btree (k)
+Foreign-key constraints:
+    "cache_tbl_parent_fkey" FOREIGN KEY (parent) REFERENCES cache_tbl(k)
+Referenced by:
+    TABLE "cache_tbl" CONSTRAINT "cache_tbl_parent_fkey" FOREIGN KEY (parent) REFERENCES cache_tbl(k)
+
+
+            Table "public.empty_tbl"
+ Column | Type | Collation | Nullable | Default 
+--------+------+-----------+----------+---------
+
+
+                          Foreign table "public.ft_csv"
+ Column |  Type   | Collation | Nullable |   Default   |       FDW options       
+--------+---------+-----------+----------+-------------+-------------------------
+ id     | integer |           | not null |             | (force_not_null 'true')
+ name|x | text    |           |          |             | 
+ note   | text    | C         |          | 'x|y'::text | 
+Check constraints:
+    "ft_chk" CHECK (id > 0)
+Server: file_srv
+FDW options: (filename '/tmp/x.csv', format 'csv', delimiter '|', header 'true')
+
+
+                     Foreign table "public.ft_remote"
+ Column |  Type   | Collation | Nullable | Default |      FDW options      
+--------+---------+-----------+----------+---------+-----------------------
+ a      | integer |           |          |         | 
+ b      | text    |           |          |         | (column_name 'B col')
+Triggers:
+    ft_trg BEFORE INSERT ON ft_remote FOR EACH ROW EXECUTE FUNCTION trg_fn()
+Server: Remote Srv
+FDW options: (schema_name 'public', table_name 'remote t')
+
+
+                   Foreign table "public.ft_child"
+   Column   |  Type   | Collation | Nullable | Default | FDW options 
+------------+---------+-----------+----------+---------+-------------
+ name       | text    |           | not null |         | 
+ population | real    |           |          |         | 
+ extra      | integer |           |          |         | 
+Check constraints:
+    "pop_check" CHECK (population >= 0::double precision)
+Server: file_srv
+FDW options: (filename '/dev/null')
+Inherits: cities
+
+
+                    View "public.v_cust"
+ Column |       Type        | Collation | Nullable | Default 
+--------+-------------------+-----------+----------+---------
+ id     | integer           |           |          | 
+ email  | character varying |           |          | 
+
+
+                View "public.v_check"
+  Column  |  Type   | Collation | Nullable | Default 
+----------+---------+-----------+----------+---------
+ order_id | bigint  |           |          | 
+ qty      | integer |           |          | 
+Triggers:
+    v_check_ins INSTEAD OF INSERT ON v_check FOR EACH ROW EXECUTE FUNCTION view_ins_fn()
+
+
+          Materialized view "public.mv_orders"
+   Column    |  Type   | Collation | Nullable | Default 
+-------------+---------+-----------+----------+---------
+ customer_id | integer |           |          | 
+ n           | bigint  |           |          | 
+ total       | numeric |           |          | 
+Indexes:
+    "mv_orders_customer" UNIQUE, btree (customer_id)
+
+
+              Table "public.secrets"
+ Column |  Type   | Collation | Nullable | Default 
+--------+---------+-----------+----------+---------
+ id     | integer |           |          | 
+ secret | text    |           |          | 
+Policies (forced row security enabled): (none)
+
+
+               Table "public.loose"
+ Column |  Type   | Collation | Nullable | Default 
+--------+---------+-----------+----------+---------
+ id     | integer |           |          | 
+Policies (row security disabled):
+    POLICY "loose_p"
+      USING ((id > 0))
+
+
+                Table "public.ts_tbl"
+ Column |   Type    | Collation | Nullable | Default 
+--------+-----------+-----------+----------+---------
+ a      | integer   |           |          | 
+ b      | text      |           | not null | 
+ c      | tstzrange |           |          | 
+Indexes:
+    "ts_tbl_pkey" PRIMARY KEY, btree (b), tablespace "Fast Space"
+    "ts_tbl_a_idx" btree (a) WHERE a > 0, tablespace "Fast Space"
+    "ts_tbl_b_idx" btree (b) CLUSTER, tablespace "Fast Space"
+    "ts_tbl_excl" EXCLUDE USING gist (c WITH &&) WHERE (a > 10), tablespace "Fast Space"
+Tablespace: "Fast Space"
+

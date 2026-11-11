@@ -1,0 +1,71 @@
+                                             Table "app.customers"
+    Column    │            Type             │ Collation │ Nullable │                  Default                  
+──────────────┼─────────────────────────────┼───────────┼──────────┼───────────────────────────────────────────
+ id           │ integer                     │           │ not null │ nextval('app.customers_id_seq'::regclass)
+ email        │ character varying(255)      │           │ not null │ 
+ name         │ text                        │ C         │          │ 'anon'::text
+ Display Name │ text                        │           │          │ 
+ user         │ text                        │           │          │ 
+ mood         │ app.mood                    │           │          │ 'ok'::app.mood
+ score        │ numeric(10,2)               │           │          │ 
+ tags         │ text[]                      │           │          │ '{}'::text[]
+ created      │ timestamp(3) with time zone │           │ not null │ now()
+ doc          │ jsonb                       │           │          │ 
+ code         │ character(3)                │           │          │ 
+ b            │ bytea                       │           │          │ 
+ note         │ text                        │           │          │ 'a | b'::text
+ multi        │ text                        │           │          │ 'line one                                ↵
+              │                             │           │          │ line two'::text
+ pos          │ posint                      │           │          │ 
+Indexes:
+    "customers_pkey" PRIMARY KEY, btree (id) CLUSTER
+    "Customers Mixed" btree ("Display Name" text_pattern_ops)
+    "customers_code_uidx" UNIQUE, btree (code) INCLUDE (name) WITH (fillfactor='70')
+    "customers_created_partial" btree (created DESC NULLS LAST) WHERE score > 10::numeric
+    "customers_doc_gin" gin (doc jsonb_path_ops)
+    "customers_email_key" UNIQUE CONSTRAINT, btree (email)
+    "customers_lower_name_idx" btree (lower(name))
+Check constraints:
+    "customers_score_check" CHECK (score >= 0::numeric)
+Referenced by:
+    TABLE "events" CONSTRAINT "events_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES app.customers(id)
+    TABLE "gen_ref" CONSTRAINT "gen_ref_fk" FOREIGN KEY (a) REFERENCES app.customers(id) NOT ENFORCED
+    TABLE "orders" CONSTRAINT "orders_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES app.customers(id) ON DELETE CASCADE
+    TABLE "orders" CONSTRAINT "orders_referrer_fk" FOREIGN KEY (referrer_id) REFERENCES app.customers(id) MATCH FULL ON UPDATE SET NULL
+Policies:
+    POLICY "P Update" FOR UPDATE
+      USING (
+CASE
+    WHEN (score > (5)::numeric) THEN true
+    ELSE false
+END)
+    POLICY "p_all" AS RESTRICTIVE
+      USING (true)
+      WITH CHECK (((email)::text <> ''::text))
+    POLICY "p_sel" FOR SELECT
+      TO Bob,alice
+      USING ((score > (0)::numeric))
+Statistics objects:
+    "app.cust_stats" (ndistinct, dependencies) ON email, name FROM app.customers
+    "app.cust_stats_all" ON email, code FROM app.customers; STATISTICS 50
+Rules:
+    cust_rule AS
+    ON DELETE TO app.customers
+   WHERE old.id < 0 DO INSTEAD NOTHING
+Disabled rules:
+    cust_rule_dis AS
+    ON UPDATE TO app.customers
+   WHERE old.id < '-10'::integer DO  INSERT INTO app.audit_log (msg)
+  VALUES ('updated'::text)
+Publications:
+    "pub1"
+Triggers:
+    cust_ctrg AFTER INSERT ON app.customers DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION trg_fn()
+    cust_trg BEFORE INSERT OR UPDATE ON app.customers FOR EACH ROW EXECUTE FUNCTION trg_fn()
+Disabled user triggers:
+    cust_trg_dis AFTER DELETE ON app.customers FOR EACH ROW WHEN (old.id > 0) EXECUTE FUNCTION trg_fn()
+Triggers firing always:
+    cust_trg_always AFTER UPDATE OF email ON app.customers FOR EACH STATEMENT EXECUTE FUNCTION trg_fn()
+Triggers firing on replica only:
+    cust_trg_replica AFTER TRUNCATE ON app.customers FOR EACH STATEMENT EXECUTE FUNCTION trg_fn()
+

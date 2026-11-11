@@ -1,0 +1,15 @@
+                                 Partitioned table "public.measurements"
+ Column  |  Type   | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+---------+---------+-----------+----------+---------+----------+-------------+--------------+-------------
+ id      | bigint  |           | not null |         | plain    |             |              | 
+ logdate | date    |           | not null |         | plain    |             |              | 
+ region  | text    |           |          |         | extended |             |              | 
+ val     | integer |           |          | 0       | plain    |             |              | 
+Partition key: RANGE (logdate)
+Indexes:
+    "measurements_pkey" PRIMARY KEY, btree (id, logdate)
+    "measurements_region_idx" btree (region)
+Partitions: measurements_2024 FOR VALUES FROM ('2024-01-01') TO ('2025-01-01'),
+            measurements_2025 FOR VALUES FROM ('2025-01-01') TO ('2026-01-01'), PARTITIONED,
+            measurements_def DEFAULT
+

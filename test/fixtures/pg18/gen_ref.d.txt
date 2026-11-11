@@ -1,0 +1,7 @@
+              Table "public.gen_ref"
+ Column |  Type   | Collation | Nullable | Default 
+--------+---------+-----------+----------+---------
+ a      | integer |           |          | 
+Foreign-key constraints:
+    "gen_ref_fk" FOREIGN KEY (a) REFERENCES app.customers(id) NOT ENFORCED
+

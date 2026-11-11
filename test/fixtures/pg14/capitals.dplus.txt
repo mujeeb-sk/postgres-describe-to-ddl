@@ -1,0 +1,11 @@
+                                                Table "public.capitals"
+   Column   |     Type     | Collation | Nullable |   Default    | Storage  | Compression | Stats target | Description 
+------------+--------------+-----------+----------+--------------+----------+-------------+--------------+-------------
+ name       | text         |           | not null |              | extended |             |              | 
+ population | real         |           |          |              | plain    |             |              | 
+ state      | character(2) |           |          | 'XX'::bpchar | extended |             |              | 
+Check constraints:
+    "pop_check" CHECK (population >= 0::double precision)
+Inherits: cities
+Access method: heap
+

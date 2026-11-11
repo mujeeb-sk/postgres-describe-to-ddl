@@ -1,0 +1,9 @@
+                                      Table "public.regions_eu"
+ Column | Type | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+--------+------+-----------+----------+---------+----------+-------------+--------------+-------------
+ code   | text |           |          |         | extended |             |              | 
+ name   | text |           |          |         | extended |             |              | 
+Partition of: regions FOR VALUES IN ('eu', 'uk', 'it''s')
+Partition constraint: ((code IS NOT NULL) AND (code = ANY (ARRAY['eu'::text, 'uk'::text, 'it''s'::text])))
+Access method: heap
+

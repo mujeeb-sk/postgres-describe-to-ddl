@@ -1,0 +1,18 @@
+                                        Table "public.measurements_2024"
+ Column  |  Type   | Collation | Nullable | Default | Storage  | Compression | Stats target |    Description    
+---------+---------+-----------+----------+---------+----------+-------------+--------------+-------------------
+ id      | bigint  |           | not null |         | plain    |             |              | 
+ logdate | date    |           | not null |         | plain    |             |              | 
+ region  | text    |           |          |         | extended |             |              | 
+ val     | integer |           |          | 0       | plain    |             |              | partition comment
+Partition of: measurements FOR VALUES FROM ('2024-01-01') TO ('2025-01-01')
+Partition constraint: ((logdate IS NOT NULL) AND (logdate >= '2024-01-01'::date) AND (logdate < '2025-01-01'::date))
+Indexes:
+    "measurements_2024_pkey" PRIMARY KEY, btree (id, logdate)
+    "measurements_2024_region_idx" btree (region)
+    "measurements_2024_val_idx" btree (val)
+Not-null constraints:
+    "measurements_id_not_null" NOT NULL "id" (inherited)
+    "measurements_logdate_not_null" NOT NULL "logdate" (inherited)
+Access method: heap
+

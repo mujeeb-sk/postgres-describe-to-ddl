@@ -1,0 +1,6 @@
+             Table "app.audit_log"
+ Column | Type | Collation | Nullable | Default 
+--------+------+-----------+----------+---------
+ msg    | text |           |          | 
+Number of child tables: 1 (Use \d+ to list them.)
+

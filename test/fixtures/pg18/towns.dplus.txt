@@ -1,0 +1,15 @@
+                                           Table "public.towns"
+   Column   | Type | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+------------+------+-----------+----------+---------+----------+-------------+--------------+-------------
+ name       | text |           | not null |         | extended |             |              | 
+ population | real |           |          |         | plain    |             |              | 
+ msg        | text |           |          |         | extended |             |              | 
+ mayor      | text |           |          |         | extended |             |              | 
+Check constraints:
+    "pop_check" CHECK (population >= 0::double precision)
+Not-null constraints:
+    "cities_name_not_null" NOT NULL "name" (inherited)
+Inherits: cities,
+          app.audit_log
+Access method: heap
+

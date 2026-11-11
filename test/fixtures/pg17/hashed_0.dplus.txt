@@ -1,0 +1,9 @@
+                                         Table "public.hashed_0"
+ Column |  Type   | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+----------+-------------+--------------+-------------
+ id     | integer |           |          |         | plain    |             |              | 
+ data   | text    |           |          |         | extended |             |              | 
+Partition of: hashed FOR VALUES WITH (modulus 2, remainder 0)
+Partition constraint: satisfies_hash_partition('22468'::oid, 2, 0, id)
+Access method: heap
+

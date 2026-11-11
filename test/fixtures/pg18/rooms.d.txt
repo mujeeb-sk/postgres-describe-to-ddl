@@ -1,0 +1,10 @@
+                 Table "public.rooms"
+  Column  |   Type    | Collation | Nullable | Default 
+----------+-----------+-----------+----------+---------
+ id       | integer   |           | not null | 
+ valid_at | daterange |           | not null | 
+Indexes:
+    "rooms_pk" PRIMARY KEY (id, valid_at WITHOUT OVERLAPS)
+Referenced by:
+    TABLE "room_names" CONSTRAINT "room_names_fk" FOREIGN KEY (id, PERIOD valid_at) REFERENCES rooms(id, PERIOD valid_at)
+

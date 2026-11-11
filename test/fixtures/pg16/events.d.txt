@@ -1,0 +1,13 @@
+           Partitioned table "public.events"
+   Column    |  Type   | Collation | Nullable | Default 
+-------------+---------+-----------+----------+---------
+ id          | integer |           | not null | 
+ customer_id | integer |           |          | 
+ at          | date    |           | not null | 
+Partition key: RANGE (at)
+Foreign-key constraints:
+    "events_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES app.customers(id)
+Triggers:
+    events_trg AFTER INSERT ON events FOR EACH ROW EXECUTE FUNCTION trg_fn()
+Number of partitions: 1 (Use \d+ to list them.)
+

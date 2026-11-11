@@ -1,0 +1,1 @@
+-- Note: psql shows a view's query only for \d+; run \d+ v_base and convert that output.

@@ -1,0 +1,16 @@
+                                      Partitioned table "public.events"
+   Column    |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+-------------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ id          | integer |           | not null |         | plain   |             |              | 
+ customer_id | integer |           |          |         | plain   |             |              | 
+ at          | date    |           | not null |         | plain   |             |              | 
+Partition key: RANGE (at)
+Foreign-key constraints:
+    "events_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES app.customers(id)
+Not-null constraints:
+    "events_id_not_null" NOT NULL "id"
+    "events_at_not_null" NOT NULL "at"
+Triggers:
+    events_trg AFTER INSERT ON events FOR EACH ROW EXECUTE FUNCTION trg_fn()
+Partitions: events_2024 FOR VALUES FROM ('2024-01-01') TO ('2025-01-01')
+

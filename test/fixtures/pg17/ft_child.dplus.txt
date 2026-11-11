@@ -1,0 +1,12 @@
+                                       Foreign table "public.ft_child"
+   Column   |  Type   | Collation | Nullable | Default | FDW options | Storage  | Stats target | Description 
+------------+---------+-----------+----------+---------+-------------+----------+--------------+-------------
+ name       | text    |           | not null |         |             | extended |              | 
+ population | real    |           |          |         |             | plain    |              | 
+ extra      | integer |           |          |         |             | plain    |              | 
+Check constraints:
+    "pop_check" CHECK (population >= 0::double precision)
+Server: file_srv
+FDW options: (filename '/dev/null')
+Inherits: cities
+

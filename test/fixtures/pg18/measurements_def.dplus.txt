@@ -1,0 +1,18 @@
+                                     Table "public.measurements_def"
+ Column  |  Type   | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+---------+---------+-----------+----------+---------+----------+-------------+--------------+-------------
+ id      | bigint  |           | not null |         | plain    |             |              | 
+ logdate | date    |           | not null |         | plain    |             |              | 
+ region  | text    |           | not null |         | extended |             |              | 
+ val     | integer |           |          | 42      | plain    |             |              | 
+Partition of: measurements DEFAULT
+Partition constraint: (NOT ((logdate IS NOT NULL) AND (((logdate >= '2024-01-01'::date) AND (logdate < '2025-01-01'::date)) OR ((logdate >= '2025-01-01'::date) AND (logdate < '2026-01-01'::date)))))
+Indexes:
+    "measurements_def_pkey" PRIMARY KEY, btree (id, logdate)
+    "measurements_def_region_idx" btree (region)
+Not-null constraints:
+    "measurements_id_not_null" NOT NULL "id" (inherited)
+    "measurements_logdate_not_null" NOT NULL "logdate" (inherited)
+    "measurements_def_region_not_null" NOT NULL "region"
+Access method: heap
+

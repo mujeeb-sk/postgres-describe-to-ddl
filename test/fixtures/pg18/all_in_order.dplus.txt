@@ -1,0 +1,753 @@
+                                        Table "app.audit_log"
+ Column | Type | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+--------+------+-----------+----------+---------+----------+-------------+--------------+-------------
+ msg    | text |           |          |         | extended |             |              | 
+Child tables: towns
+Access method: heap
+
+
+                                                                          Table "app.customers"
+    Column    |            Type             | Collation | Nullable |                  Default                  | Storage  | Compression | Stats target |   Description    
+--------------+-----------------------------+-----------+----------+-------------------------------------------+----------+-------------+--------------+------------------
+ id           | integer                     |           | not null | nextval('app.customers_id_seq'::regclass) | plain    |             |              | 
+ email        | character varying(255)      |           | not null |                                           | extended |             |              | Customer's email
+ name         | text                        | C         |          | 'anon'::text                              | extended |             | 500          | multi           +
+              |                             |           |          |                                           |          |             |              | line comment
+ Display Name | text                        |           |          |                                           | extended |             |              | 
+ user         | text                        |           |          |                                           | extended |             |              | 
+ mood         | app.mood                    |           |          | 'ok'::app.mood                            | plain    |             |              | 
+ score        | numeric(10,2)               |           |          |                                           | extended |             |              | 
+ tags         | text[]                      |           |          | '{}'::text[]                              | extended |             |              | 
+ created      | timestamp(3) with time zone |           | not null | now()                                     | plain    |             |              | 
+ doc          | jsonb                       |           |          |                                           | external |             |              | 
+ code         | character(3)                |           |          |                                           | extended |             |              | 
+ b            | bytea                       |           |          |                                           | extended | pglz        |              | 
+ note         | text                        |           |          | 'a | b'::text                             | extended |             |              | 
+ multi        | text                        |           |          | 'line one                                +| extended |             |              | 
+              |                             |           |          | line two'::text                           |          |             |              | 
+ pos          | posint                      |           |          |                                           | plain    |             |              | 
+Indexes:
+    "customers_pkey" PRIMARY KEY, btree (id) CLUSTER
+    "Customers Mixed" btree ("Display Name" text_pattern_ops)
+    "customers_code_uidx" UNIQUE, btree (code) INCLUDE (name) WITH (fillfactor='70')
+    "customers_created_partial" btree (created DESC NULLS LAST) WHERE score > 10::numeric
+    "customers_doc_gin" gin (doc jsonb_path_ops)
+    "customers_email_key" UNIQUE CONSTRAINT, btree (email)
+    "customers_lower_name_idx" btree (lower(name))
+Check constraints:
+    "customers_score_check" CHECK (score >= 0::numeric)
+Referenced by:
+    TABLE "events" CONSTRAINT "events_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES app.customers(id)
+    TABLE "gen_ref" CONSTRAINT "gen_ref_fk" FOREIGN KEY (a) REFERENCES app.customers(id) NOT ENFORCED
+    TABLE "orders" CONSTRAINT "orders_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES app.customers(id) ON DELETE CASCADE
+    TABLE "orders" CONSTRAINT "orders_referrer_fk" FOREIGN KEY (referrer_id) REFERENCES app.customers(id) MATCH FULL ON UPDATE SET NULL
+Policies:
+    POLICY "P Update" FOR UPDATE
+      USING (
+CASE
+    WHEN (score > (5)::numeric) THEN true
+    ELSE false
+END)
+    POLICY "p_all" AS RESTRICTIVE
+      USING (true)
+      WITH CHECK (((email)::text <> ''::text))
+    POLICY "p_sel" FOR SELECT
+      TO Bob,alice
+      USING ((score > (0)::numeric))
+Statistics objects:
+    "app.cust_stats" (ndistinct, dependencies) ON email, name FROM app.customers
+    "app.cust_stats_all" ON email, code FROM app.customers; STATISTICS 50
+Rules:
+    cust_rule AS
+    ON DELETE TO app.customers
+   WHERE old.id < 0 DO INSTEAD NOTHING
+Disabled rules:
+    cust_rule_dis AS
+    ON UPDATE TO app.customers
+   WHERE old.id < '-10'::integer DO  INSERT INTO app.audit_log (msg)
+  VALUES ('updated'::text)
+Publications:
+    "pub1"
+Not-null constraints:
+    "customers_id_not_null" NOT NULL "id"
+    "customers_email_not_null" NOT NULL "email"
+    "customers_created_not_null" NOT NULL "created"
+Triggers:
+    cust_ctrg AFTER INSERT ON app.customers DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION trg_fn()
+    cust_trg BEFORE INSERT OR UPDATE ON app.customers FOR EACH ROW EXECUTE FUNCTION trg_fn()
+Disabled user triggers:
+    cust_trg_dis AFTER DELETE ON app.customers FOR EACH ROW WHEN (old.id > 0) EXECUTE FUNCTION trg_fn()
+Triggers firing always:
+    cust_trg_always AFTER UPDATE OF email ON app.customers FOR EACH STATEMENT EXECUTE FUNCTION trg_fn()
+Triggers firing on replica only:
+    cust_trg_replica AFTER TRUNCATE ON app.customers FOR EACH STATEMENT EXECUTE FUNCTION trg_fn()
+Access method: heap
+Options: fillfactor=80, autovacuum_enabled=false
+
+
+                                                                  Table "public.orders"
+   Column    |   Type    | Collation | Nullable |                      Default                      | Storage  | Compression | Stats target | Description 
+-------------+-----------+-----------+----------+---------------------------------------------------+----------+-------------+--------------+-------------
+ order_id    | bigint    |           | not null | generated always as identity                      | plain    |             |              | 
+ customer_id | integer   |           | not null |                                                   | plain    |             |              | 
+ qty         | integer   |           | not null | 1                                                 | plain    |             |              | 
+ price       | numeric   |           | not null |                                                   | main     |             |              | 
+ total       | numeric   |           |          | generated always as (qty::numeric * price) stored | main     |             |              | 
+ during      | tstzrange |           |          |                                                   | extended |             |              | 
+ referrer_id | integer   |           |          |                                                   | plain    |             |              | 
+Indexes:
+    "orders_pkey" PRIMARY KEY, btree (order_id) DEFERRABLE INITIALLY DEFERRED
+    "no_overlap" EXCLUDE USING gist (customer_id WITH =, during WITH &&)
+Check constraints:
+    "orders_case_check" CHECK (
+CASE
+    WHEN qty > 10 THEN price < 100::numeric
+    ELSE true
+END)
+    "orders_qty_check" CHECK (qty > 0) NO INHERIT
+    "price_pos" CHECK (price > 0::numeric) NOT VALID
+Foreign-key constraints:
+    "orders_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES app.customers(id) ON DELETE CASCADE
+    "orders_referrer_fk" FOREIGN KEY (referrer_id) REFERENCES app.customers(id) MATCH FULL ON UPDATE SET NULL
+Not-null constraints:
+    "orders_order_id_not_null" NOT NULL "order_id"
+    "orders_customer_id_not_null" NOT NULL "customer_id"
+    "orders_qty_not_null" NOT NULL "qty"
+    "orders_price_not_null" NOT NULL "price"
+Replica Identity: FULL
+Access method: heap
+
+
+                                                                   Table "Mixed Case.Weird Table"
+   Column   |  Type   | Collation | Nullable |                            Default                             | Storage  | Compression | Stats target | Description 
+------------+---------+-----------+----------+----------------------------------------------------------------+----------+-------------+--------------+-------------
+ Id         | integer |           | not null | generated by default as identity                               | plain    |             |              | 
+ select     | integer |           |          |                                                                | plain    |             |              | 
+ a"b        | text    |           |          |                                                                | extended |             |              | 
+ x          | bigint  |           |          | nextval('shared_seq'::regclass)                                | plain    |             |              | 
+ Serial Col | integer |           | not null | nextval('"Mixed Case"."Weird Table_Serial Col_seq"'::regclass) | plain    |             |              | 
+Indexes:
+    "Weird Table_select_x_key" UNIQUE CONSTRAINT, btree ("select", x) DEFERRABLE
+    "weird_replident" UNIQUE, btree ("Id") REPLICA IDENTITY
+Not-null constraints:
+    "Weird Table_Id_not_null" NOT NULL "Id"
+    "Weird Table_Serial Col_not_null" NOT NULL "Serial Col"
+Access method: heap
+
+
+                                 Partitioned table "public.measurements"
+ Column  |  Type   | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+---------+---------+-----------+----------+---------+----------+-------------+--------------+-------------
+ id      | bigint  |           | not null |         | plain    |             |              | 
+ logdate | date    |           | not null |         | plain    |             |              | 
+ region  | text    |           |          |         | extended |             |              | 
+ val     | integer |           |          | 0       | plain    |             |              | 
+Partition key: RANGE (logdate)
+Indexes:
+    "measurements_pkey" PRIMARY KEY, btree (id, logdate)
+    "measurements_region_idx" btree (region)
+Not-null constraints:
+    "measurements_id_not_null" NOT NULL "id"
+    "measurements_logdate_not_null" NOT NULL "logdate"
+Partitions: measurements_2024 FOR VALUES FROM ('2024-01-01') TO ('2025-01-01'),
+            measurements_2025 FOR VALUES FROM ('2025-01-01') TO ('2026-01-01'), PARTITIONED,
+            measurements_def DEFAULT
+
+
+                                        Table "public.measurements_2024"
+ Column  |  Type   | Collation | Nullable | Default | Storage  | Compression | Stats target |    Description    
+---------+---------+-----------+----------+---------+----------+-------------+--------------+-------------------
+ id      | bigint  |           | not null |         | plain    |             |              | 
+ logdate | date    |           | not null |         | plain    |             |              | 
+ region  | text    |           |          |         | extended |             |              | 
+ val     | integer |           |          | 0       | plain    |             |              | partition comment
+Partition of: measurements FOR VALUES FROM ('2024-01-01') TO ('2025-01-01')
+Partition constraint: ((logdate IS NOT NULL) AND (logdate >= '2024-01-01'::date) AND (logdate < '2025-01-01'::date))
+Indexes:
+    "measurements_2024_pkey" PRIMARY KEY, btree (id, logdate)
+    "measurements_2024_region_idx" btree (region)
+    "measurements_2024_val_idx" btree (val)
+Not-null constraints:
+    "measurements_id_not_null" NOT NULL "id" (inherited)
+    "measurements_logdate_not_null" NOT NULL "logdate" (inherited)
+Access method: heap
+
+
+                               Partitioned table "public.measurements_2025"
+ Column  |  Type   | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+---------+---------+-----------+----------+---------+----------+-------------+--------------+-------------
+ id      | bigint  |           | not null |         | plain    |             |              | 
+ logdate | date    |           | not null |         | plain    |             |              | 
+ region  | text    |           |          |         | extended |             |              | 
+ val     | integer |           |          | 0       | plain    |             |              | 
+Partition of: measurements FOR VALUES FROM ('2025-01-01') TO ('2026-01-01')
+Partition constraint: ((logdate IS NOT NULL) AND (logdate >= '2025-01-01'::date) AND (logdate < '2026-01-01'::date))
+Partition key: RANGE (logdate)
+Indexes:
+    "measurements_2025_pkey" PRIMARY KEY, btree (id, logdate)
+    "measurements_2025_region_idx" btree (region)
+Not-null constraints:
+    "measurements_id_not_null" NOT NULL "id" (inherited)
+    "measurements_logdate_not_null" NOT NULL "logdate" (inherited)
+Partitions: measurements_2025_h1 FOR VALUES FROM ('2025-01-01') TO ('2025-07-01')
+
+
+                                   Table "public.measurements_2025_h1"
+ Column  |  Type   | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+---------+---------+-----------+----------+---------+----------+-------------+--------------+-------------
+ id      | bigint  |           | not null |         | plain    |             |              | 
+ logdate | date    |           | not null |         | plain    |             |              | 
+ region  | text    |           |          |         | extended |             |              | 
+ val     | integer |           |          | 0       | plain    |             |              | 
+Partition of: measurements_2025 FOR VALUES FROM ('2025-01-01') TO ('2025-07-01')
+Partition constraint: ((logdate IS NOT NULL) AND (logdate >= '2025-01-01'::date) AND (logdate < '2026-01-01'::date) AND (logdate IS NOT NULL) AND (logdate >= '2025-01-01'::date) AND (logdate < '2025-07-01'::date))
+Indexes:
+    "measurements_2025_h1_pkey" PRIMARY KEY, btree (id, logdate)
+    "measurements_2025_h1_region_idx" btree (region)
+Not-null constraints:
+    "measurements_id_not_null" NOT NULL "id" (inherited)
+    "measurements_logdate_not_null" NOT NULL "logdate" (inherited)
+Access method: heap
+
+
+                                  Partitioned table "public.regions"
+ Column | Type | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+--------+------+-----------+----------+---------+----------+-------------+--------------+-------------
+ code   | text |           |          |         | extended |             |              | 
+ name   | text |           |          |         | extended |             |              | 
+Partition key: LIST (code)
+Partitions: regions_eu FOR VALUES IN ('eu', 'uk', 'it''s')
+
+
+                                      Table "public.regions_eu"
+ Column | Type | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+--------+------+-----------+----------+---------+----------+-------------+--------------+-------------
+ code   | text |           |          |         | extended |             |              | 
+ name   | text |           |          |         | extended |             |              | 
+Partition of: regions FOR VALUES IN ('eu', 'uk', 'it''s')
+Partition constraint: ((code IS NOT NULL) AND (code = ANY (ARRAY['eu'::text, 'uk'::text, 'it''s'::text])))
+Access method: heap
+
+
+                                     Table "public.measurements_def"
+ Column  |  Type   | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+---------+---------+-----------+----------+---------+----------+-------------+--------------+-------------
+ id      | bigint  |           | not null |         | plain    |             |              | 
+ logdate | date    |           | not null |         | plain    |             |              | 
+ region  | text    |           | not null |         | extended |             |              | 
+ val     | integer |           |          | 42      | plain    |             |              | 
+Partition of: measurements DEFAULT
+Partition constraint: (NOT ((logdate IS NOT NULL) AND (((logdate >= '2024-01-01'::date) AND (logdate < '2025-01-01'::date)) OR ((logdate >= '2025-01-01'::date) AND (logdate < '2026-01-01'::date)))))
+Indexes:
+    "measurements_def_pkey" PRIMARY KEY, btree (id, logdate)
+    "measurements_def_region_idx" btree (region)
+Not-null constraints:
+    "measurements_id_not_null" NOT NULL "id" (inherited)
+    "measurements_logdate_not_null" NOT NULL "logdate" (inherited)
+    "measurements_def_region_not_null" NOT NULL "region"
+Access method: heap
+
+
+                                    Partitioned table "public.hashed"
+ Column |  Type   | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+----------+-------------+--------------+-------------
+ id     | integer |           |          |         | plain    |             |              | 
+ data   | text    |           |          |         | extended |             |              | 
+Partition key: HASH (id)
+Partitions: hashed_0 FOR VALUES WITH (modulus 2, remainder 0),
+            hashed_1 FOR VALUES WITH (modulus 2, remainder 1), FOREIGN
+
+
+                                         Table "public.hashed_0"
+ Column |  Type   | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+----------+-------------+--------------+-------------
+ id     | integer |           |          |         | plain    |             |              | 
+ data   | text    |           |          |         | extended |             |              | 
+Partition of: hashed FOR VALUES WITH (modulus 2, remainder 0)
+Partition constraint: satisfies_hash_partition('21871'::oid, 2, 0, id)
+Access method: heap
+
+
+                                         Foreign table "public.hashed_1"
+ Column |  Type   | Collation | Nullable | Default |     FDW options     | Storage  | Stats target | Description 
+--------+---------+-----------+----------+---------+---------------------+----------+--------------+-------------
+ id     | integer |           |          |         |                     | plain    |              | 
+ data   | text    |           |          |         | (force_null 'true') | extended |              | 
+Partition of: hashed FOR VALUES WITH (modulus 2, remainder 1)
+Partition constraint: satisfies_hash_partition('21871'::oid, 2, 1, id)
+Server: file_srv
+FDW options: (filename '/dev/null')
+
+
+                                      Partitioned table "public.events"
+   Column    |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+-------------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ id          | integer |           | not null |         | plain   |             |              | 
+ customer_id | integer |           |          |         | plain   |             |              | 
+ at          | date    |           | not null |         | plain   |             |              | 
+Partition key: RANGE (at)
+Foreign-key constraints:
+    "events_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES app.customers(id)
+Not-null constraints:
+    "events_id_not_null" NOT NULL "id"
+    "events_at_not_null" NOT NULL "at"
+Triggers:
+    events_trg AFTER INSERT ON events FOR EACH ROW EXECUTE FUNCTION trg_fn()
+Partitions: events_2024 FOR VALUES FROM ('2024-01-01') TO ('2025-01-01')
+
+
+                                         Table "public.events_2024"
+   Column    |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+-------------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ id          | integer |           | not null |         | plain   |             |              | 
+ customer_id | integer |           |          |         | plain   |             |              | 
+ at          | date    |           | not null |         | plain   |             |              | 
+Partition of: events FOR VALUES FROM ('2024-01-01') TO ('2025-01-01')
+Partition constraint: ((at IS NOT NULL) AND (at >= '2024-01-01'::date) AND (at < '2025-01-01'::date))
+Foreign-key constraints:
+    TABLE "events" CONSTRAINT "events_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES app.customers(id)
+Not-null constraints:
+    "events_id_not_null" NOT NULL "id" (inherited)
+    "events_at_not_null" NOT NULL "at" (inherited)
+Triggers:
+    events_trg AFTER INSERT ON events_2024 FOR EACH ROW EXECUTE FUNCTION trg_fn(), ON TABLE events
+Access method: heap
+
+
+                                          Table "public.cities"
+   Column   | Type | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+------------+------+-----------+----------+---------+----------+-------------+--------------+-------------
+ name       | text |           | not null |         | extended |             |              | 
+ population | real |           |          |         | plain    |             |              | 
+Check constraints:
+    "pop_check" CHECK (population >= 0::double precision)
+Not-null constraints:
+    "cities_name_not_null" NOT NULL "name"
+Child tables: capitals,
+              ft_child, FOREIGN,
+              towns
+Access method: heap
+
+
+                                                Table "public.capitals"
+   Column   |     Type     | Collation | Nullable |   Default    | Storage  | Compression | Stats target | Description 
+------------+--------------+-----------+----------+--------------+----------+-------------+--------------+-------------
+ name       | text         |           | not null |              | extended |             |              | 
+ population | real         |           |          |              | plain    |             |              | 
+ state      | character(2) |           |          | 'XX'::bpchar | extended |             |              | 
+Check constraints:
+    "pop_check" CHECK (population >= 0::double precision)
+Not-null constraints:
+    "cities_name_not_null" NOT NULL "name" (inherited)
+Inherits: cities
+Access method: heap
+
+
+                                           Table "public.towns"
+   Column   | Type | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+------------+------+-----------+----------+---------+----------+-------------+--------------+-------------
+ name       | text |           | not null |         | extended |             |              | 
+ population | real |           |          |         | plain    |             |              | 
+ msg        | text |           |          |         | extended |             |              | 
+ mayor      | text |           |          |         | extended |             |              | 
+Check constraints:
+    "pop_check" CHECK (population >= 0::double precision)
+Not-null constraints:
+    "cities_name_not_null" NOT NULL "name" (inherited)
+Inherits: cities,
+          app.audit_log
+Access method: heap
+
+
+                                          Table "public.people"
+ Column |  Type   | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+----------+-------------+--------------+-------------
+ name   | text    |           | not null |         | extended |             |              | 
+ age    | integer |           | not null | 0       | plain    |             |              | 
+Indexes:
+    "people_pkey" PRIMARY KEY, btree (name)
+Not-null constraints:
+    "people_name_not_null" NOT NULL "name"
+    "people_age_not_null" NOT NULL "age"
+Typed table of type: person_t
+Access method: heap
+
+
+                                             Unlogged table "public.cache_tbl"
+ Column  |           Type           | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+---------+--------------------------+-----------+----------+---------+----------+-------------+--------------+-------------
+ k       | text                     |           | not null |         | extended |             |              | 
+ v       | text                     |           |          |         | extended |             |              | 
+ expires | timestamp with time zone |           |          |         | plain    |             |              | 
+ parent  | text                     |           |          |         | extended |             |              | 
+Indexes:
+    "cache_tbl_pkey" PRIMARY KEY, btree (k)
+Foreign-key constraints:
+    "cache_tbl_parent_fkey" FOREIGN KEY (parent) REFERENCES cache_tbl(k)
+Referenced by:
+    TABLE "cache_tbl" CONSTRAINT "cache_tbl_parent_fkey" FOREIGN KEY (parent) REFERENCES cache_tbl(k)
+Not-null constraints:
+    "cache_tbl_k_not_null" NOT NULL "k"
+Access method: heap
+
+
+                                      Table "public.empty_tbl"
+ Column | Type | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+--------+------+-----------+----------+---------+---------+-------------+--------------+-------------
+Access method: heap
+
+
+                                                Foreign table "public.ft_csv"
+ Column |  Type   | Collation | Nullable |   Default   |       FDW options       | Storage  | Stats target |   Description    
+--------+---------+-----------+----------+-------------+-------------------------+----------+--------------+------------------
+ id     | integer |           | not null |             | (force_not_null 'true') | plain    | 200          | 
+ name|x | text    |           |          |             |                         | extended |              | 
+ note   | text    | C         |          | 'x|y'::text |                         | extended |              | a foreign column
+Check constraints:
+    "ft_chk" CHECK (id > 0)
+Not-null constraints:
+    "ft_csv_id_not_null" NOT NULL "id"
+Server: file_srv
+FDW options: (filename '/tmp/x.csv', format 'csv', delimiter '|', header 'true')
+
+
+                                         Foreign table "public.ft_remote"
+ Column |  Type   | Collation | Nullable | Default |      FDW options      | Storage  | Stats target | Description 
+--------+---------+-----------+----------+---------+-----------------------+----------+--------------+-------------
+ a      | integer |           |          |         |                       | plain    |              | 
+ b      | text    |           |          |         | (column_name 'B col') | extended |              | 
+Triggers:
+    ft_trg BEFORE INSERT ON ft_remote FOR EACH ROW EXECUTE FUNCTION trg_fn()
+Server: Remote Srv
+FDW options: (schema_name 'public', table_name 'remote t')
+
+
+                                       Foreign table "public.ft_child"
+   Column   |  Type   | Collation | Nullable | Default | FDW options | Storage  | Stats target | Description 
+------------+---------+-----------+----------+---------+-------------+----------+--------------+-------------
+ name       | text    |           | not null |         |             | extended |              | 
+ population | real    |           |          |         |             | plain    |              | 
+ extra      | integer |           |          |         |             | plain    |              | 
+Check constraints:
+    "pop_check" CHECK (population >= 0::double precision)
+Not-null constraints:
+    "cities_name_not_null" NOT NULL "name" (inherited)
+Server: file_srv
+FDW options: (filename '/dev/null')
+Inherits: cities
+
+
+                                     View "public.v_cust"
+ Column |       Type        | Collation | Nullable | Default | Storage  |     Description     
+--------+-------------------+-----------+----------+---------+----------+---------------------
+ id     | integer           |           |          |         | plain    | 
+ email  | character varying |           |          |         | extended | view column comment
+View definition:
+ SELECT customers.id,
+    customers.email
+   FROM app.customers
+  WHERE customers.score > 0::numeric
+UNION ALL
+ SELECT 0 AS id,
+    'none'::character varying AS email;
+Options: security_barrier=true
+
+
+                            View "public.v_check"
+  Column  |  Type   | Collation | Nullable | Default | Storage | Description 
+----------+---------+-----------+----------+---------+---------+-------------
+ order_id | bigint  |           |          |         | plain   | 
+ qty      | integer |           |          |         | plain   | 
+View definition:
+ SELECT order_id,
+    qty
+   FROM orders
+  WHERE qty > 1;
+Triggers:
+    v_check_ins INSTEAD OF INSERT ON v_check FOR EACH ROW EXECUTE FUNCTION view_ins_fn()
+Options: check_option=local
+
+
+                                    Materialized view "public.mv_orders"
+   Column    |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+-------------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ customer_id | integer |           |          |         | plain   |             |              | 
+ n           | bigint  |           |          |         | plain   |             |              | 
+ total       | numeric |           |          |         | main    |             |              | 
+Indexes:
+    "mv_orders_customer" UNIQUE, btree (customer_id)
+View definition:
+ SELECT customer_id,
+    count(*) AS n,
+    sum(price) AS total
+   FROM orders
+  GROUP BY customer_id;
+Access method: heap
+Options: fillfactor=90
+
+
+                                         Table "public.secrets"
+ Column |  Type   | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+----------+-------------+--------------+-------------
+ id     | integer |           |          |         | plain    |             |              | 
+ secret | text    |           |          |         | extended |             |              | 
+Policies (forced row security enabled): (none)
+Access method: heap
+
+
+                                          Table "public.loose"
+ Column |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ id     | integer |           |          |         | plain   |             |              | 
+Policies (row security disabled):
+    POLICY "loose_p"
+      USING ((id > 0))
+Access method: heap
+
+
+                                           Table "public.ts_tbl"
+ Column |   Type    | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+--------+-----------+-----------+----------+---------+----------+-------------+--------------+-------------
+ a      | integer   |           |          |         | plain    |             |              | 
+ b      | text      |           | not null |         | extended |             |              | 
+ c      | tstzrange |           |          |         | extended |             |              | 
+Indexes:
+    "ts_tbl_pkey" PRIMARY KEY, btree (b), tablespace "Fast Space"
+    "ts_tbl_a_idx" btree (a) WHERE a > 0, tablespace "Fast Space"
+    "ts_tbl_b_idx" btree (b) CLUSTER, tablespace "Fast Space"
+    "ts_tbl_excl" EXCLUDE USING gist (c WITH &&) WHERE (a > 10), tablespace "Fast Space"
+Not-null constraints:
+    "ts_tbl_b_not_null" NOT NULL "b"
+Tablespace: "Fast Space"
+Access method: heap
+Options: parallel_workers=2, toast.autovacuum_enabled=false
+
+
+                                                                             Table "public.notes_tbl"
+          Column           |  Type   | Collation | Nullable |                       Default                       | Storage  | Compression | Stats target |      Description       
+---------------------------+---------+-----------+----------+-----------------------------------------------------+----------+-------------+--------------+------------------------
+ id                        | integer |           |          |                                                     | plain    |             |              | first line            +
+                           |         |           |          |                                                     |          |             |              |                       +
+                           |         |           |          |                                                     |          |             |              |   indented third line
+ body                      | text    |           |          |                                                     | extended |             |              | Ends with a full stop.
+ a rather long column name | text    |           |          | 'a default that is long enough to be wrapped'::text | extended |             |              | 
+Access method: heap
+
+
+                                            Table "public.wide_chars"
+ Column |  Type   | Collation | Nullable |     Default     | Storage  | Compression | Stats target | Description 
+--------+---------+-----------+----------+-----------------+----------+-------------+--------------+-------------
+ id     | integer |           |          |                 | plain    |             |              | 
+ 名前   | text    |           |          | 'x|y'::text     | extended |             |              | 
+ 数量   | integer |           | not null |                 | plain    |             |              | 数|量
+ note   | text    |           |          | '日本|語'::text | extended |             |              | 
+ face   | text    |           |          | '😀|x'::text    | extended |             |              | 
+Not-null constraints:
+    "wide_chars_数量_not_null" NOT NULL "数量"
+Access method: heap
+
+
+                                   View "public.v_base"
+ Column |          Type          | Collation | Nullable | Default | Storage  | Description 
+--------+------------------------+-----------+----------+---------+----------+-------------
+ id     | integer                |           |          |         | plain    | 
+ email  | character varying(255) |           |          |         | extended | 
+View definition:
+ SELECT id,
+    email
+   FROM app.customers;
+
+
+                            View "public.V Mid"
+ Column |  Type   | Collation | Nullable | Default | Storage | Description 
+--------+---------+-----------+----------+---------+---------+-------------
+ id     | integer |           |          |         | plain   | 
+View definition:
+ SELECT id
+   FROM v_base;
+
+
+                                   Materialized view "public.mv_top"
+ Column |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ id     | integer |           |          |         | plain   |             |              | 
+View definition:
+ SELECT id
+   FROM "V Mid";
+Access method: heap
+
+
+                             View "app.v_last"
+ Column |  Type   | Collation | Nullable | Default | Storage | Description 
+--------+---------+-----------+----------+---------+---------+-------------
+ id     | integer |           |          |         | plain   | 
+View definition:
+ SELECT id
+   FROM mv_top;
+
+
+                                           Table "public.nnd"
+ Column |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ a      | integer |           |          |         | plain   |             |              | 
+ b      | integer |           |          |         | plain   |             |              | 
+ c      | integer |           |          |         | plain   |             |              | 
+Indexes:
+    "nnd_a_key" UNIQUE CONSTRAINT, btree (a) INCLUDE (b) NULLS NOT DISTINCT
+    "nnd_b_idx" UNIQUE, btree (b) NULLS NOT DISTINCT
+Publications:
+    "pub2" (a, b) WHERE (a > 0)
+Access method: heap
+
+
+                                        Table "public.nn_alone"
+ Column |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ a      | integer |           |          |         | plain   |             |              | 
+ b      | integer |           | not null |         | plain   |             |              | 
+Not-null constraints:
+    "nn_alone_b_not_null" NOT NULL "b" NO INHERIT
+Access method: heap
+
+
+                                                       Table "public.nn_parent"
+ Column |  Type   | Collation | Nullable |                Default                | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------------------------------------+---------+-------------+--------------+-------------
+ a      | integer |           | not null |                                       | plain   |             |              | 
+ c      | integer |           | not null |                                       | plain   |             |              | 
+ d      | integer |           | not null |                                       | plain   |             |              | 
+ E e    | integer |           | not null |                                       | plain   |             |              | 
+ id     | integer |           | not null | nextval('nn_parent_id_seq'::regclass) | plain   |             |              | 
+Not-null constraints:
+    "my_nn" NOT NULL "a"
+    "c_nn" NOT NULL "c" NOT VALID
+    "nn_parent_d_not_null" NOT NULL "d"
+    "Odd "nn"" NOT NULL "E e"
+    "id_nn" NOT NULL "id"
+Child tables: nn_child
+Access method: heap
+
+
+                                                       Table "public.nn_child"
+ Column |  Type   | Collation | Nullable |                Default                | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------------------------------------+---------+-------------+--------------+-------------
+ a      | integer |           | not null |                                       | plain   |             |              | 
+ c      | integer |           | not null |                                       | plain   |             |              | 
+ d      | integer |           | not null |                                       | plain   |             |              | 
+ E e    | integer |           | not null |                                       | plain   |             |              | 
+ id     | integer |           | not null | nextval('nn_parent_id_seq'::regclass) | plain   |             |              | 
+ z      | integer |           | not null |                                       | plain   |             |              | 
+Not-null constraints:
+    "nn_child_a_not_null" NOT NULL "a" (local, inherited)
+    "c_nn" NOT NULL "c" (inherited)
+    "nn_parent_d_not_null" NOT NULL "d" (inherited)
+    "Odd "nn"" NOT NULL "E e" (inherited)
+    "id_nn" NOT NULL "id" (inherited)
+    "nn_child_z_not_null" NOT NULL "z"
+Inherits: nn_parent
+Access method: heap
+
+
+                                   Partitioned table "public.nn_part"
+ Column |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ a      | integer |           | not null |         | plain   |             |              | 
+ b      | integer |           | not null |         | plain   |             |              | 
+ c      | integer |           |          |         | plain   |             |              | 
+Partition key: LIST (a)
+Not-null constraints:
+    "par_nn" NOT NULL "a"
+    "nn_part_b_not_null" NOT NULL "b"
+Partitions: nn_part_1 FOR VALUES IN (1),
+            nn_part_2 FOR VALUES IN (2)
+
+
+                                        Table "public.nn_part_1"
+ Column |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ a      | integer |           | not null |         | plain   |             |              | 
+ b      | integer |           | not null |         | plain   |             |              | 
+ c      | integer |           |          |         | plain   |             |              | 
+Partition of: nn_part FOR VALUES IN (1)
+Partition constraint: ((a IS NOT NULL) AND (a = 1))
+Not-null constraints:
+    "par_nn" NOT NULL "a" (inherited)
+    "nn_part_b_not_null" NOT NULL "b" (inherited)
+Access method: heap
+
+
+                                        Table "public.nn_part_2"
+ Column |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ a      | integer |           | not null |         | plain   |             |              | 
+ b      | integer |           | not null |         | plain   |             |              | 
+ c      | integer |           | not null |         | plain   |             |              | 
+Partition of: nn_part FOR VALUES IN (2)
+Partition constraint: ((a IS NOT NULL) AND (a = 2))
+Not-null constraints:
+    "par_nn" NOT NULL "a" (inherited)
+    "nn_part_b_not_null" NOT NULL "b" (inherited)
+    "own_nn" NOT NULL "c"
+Access method: heap
+
+
+                                            Table "public.rooms"
+  Column  |   Type    | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+----------+-----------+-----------+----------+---------+----------+-------------+--------------+-------------
+ id       | integer   |           | not null |         | plain    |             |              | 
+ valid_at | daterange |           | not null |         | extended |             |              | 
+Indexes:
+    "rooms_pk" PRIMARY KEY (id, valid_at WITHOUT OVERLAPS)
+Referenced by:
+    TABLE "room_names" CONSTRAINT "room_names_fk" FOREIGN KEY (id, PERIOD valid_at) REFERENCES rooms(id, PERIOD valid_at)
+Not-null constraints:
+    "rooms_id_not_null" NOT NULL "id"
+    "rooms_valid_at_not_null" NOT NULL "valid_at"
+Access method: heap
+
+
+                                          Table "public.room_names"
+  Column  |   Type    | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+----------+-----------+-----------+----------+---------+----------+-------------+--------------+-------------
+ id       | integer   |           |          |         | plain    |             |              | 
+ valid_at | daterange |           |          |         | extended |             |              | 
+ name     | text      |           |          |         | extended |             |              | 
+Indexes:
+    "room_names_uq" UNIQUE (id, valid_at WITHOUT OVERLAPS) DEFERRABLE INITIALLY DEFERRED
+Foreign-key constraints:
+    "room_names_fk" FOREIGN KEY (id, PERIOD valid_at) REFERENCES rooms(id, PERIOD valid_at)
+Access method: heap
+
+
+                                           Table "public.rooms_ts"
+  Column  |   Type    | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+----------+-----------+-----------+----------+---------+----------+-------------+--------------+-------------
+ id       | integer   |           | not null |         | plain    |             |              | 
+ valid_at | daterange |           | not null |         | extended |             |              | 
+Indexes:
+    "rooms_ts_pk" PRIMARY KEY (id, valid_at WITHOUT OVERLAPS), tablespace "Fast Space"
+Not-null constraints:
+    "rooms_ts_id_not_null" NOT NULL "id"
+    "rooms_ts_valid_at_not_null" NOT NULL "valid_at"
+Access method: heap
+
+
+                                                      Table "public.gen_tbl"
+ Column |  Type   | Collation | Nullable |              Default               | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+------------------------------------+---------+-------------+--------------+-------------
+ a      | integer |           |          |                                    | plain   |             |              | 
+ b      | integer |           |          | generated always as (a * 2)        | plain   |             |              | 
+ c      | integer |           |          | generated always as (a + 1) stored | plain   |             |              | 
+Check constraints:
+    "gen_chk" CHECK (a > 0) NOT ENFORCED
+Access method: heap
+
+
+                                         Table "public.gen_ref"
+ Column |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ a      | integer |           |          |         | plain   |             |              | 
+Foreign-key constraints:
+    "gen_ref_fk" FOREIGN KEY (a) REFERENCES app.customers(id) NOT ENFORCED
+Access method: heap
+

@@ -1,0 +1,12 @@
+          Table "public.measurements_def"
+ Column  |  Type   | Collation | Nullable | Default 
+---------+---------+-----------+----------+---------
+ id      | bigint  |           | not null | 
+ logdate | date    |           | not null | 
+ region  | text    |           | not null | 
+ val     | integer |           |          | 42
+Partition of: measurements DEFAULT
+Indexes:
+    "measurements_def_pkey" PRIMARY KEY, btree (id, logdate)
+    "measurements_def_region_idx" btree (region)
+

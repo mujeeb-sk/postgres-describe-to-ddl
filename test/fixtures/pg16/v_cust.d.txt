@@ -1,0 +1,6 @@
+                    View "public.v_cust"
+ Column |       Type        | Collation | Nullable | Default 
+--------+-------------------+-----------+----------+---------
+ id     | integer           |           |          | 
+ email  | character varying |           |          | 
+

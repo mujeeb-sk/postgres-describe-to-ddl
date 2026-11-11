@@ -1,0 +1,8 @@
+                            View "public.V Mid"
+ Column |  Type   | Collation | Nullable | Default | Storage | Description 
+--------+---------+-----------+----------+---------+---------+-------------
+ id     | integer |           |          |         | plain   | 
+View definition:
+ SELECT id
+   FROM v_base;
+

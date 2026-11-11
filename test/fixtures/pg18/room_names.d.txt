@@ -1,0 +1,11 @@
+               Table "public.room_names"
+  Column  |   Type    | Collation | Nullable | Default 
+----------+-----------+-----------+----------+---------
+ id       | integer   |           |          | 
+ valid_at | daterange |           |          | 
+ name     | text      |           |          | 
+Indexes:
+    "room_names_uq" UNIQUE (id, valid_at WITHOUT OVERLAPS) DEFERRABLE INITIALLY DEFERRED
+Foreign-key constraints:
+    "room_names_fk" FOREIGN KEY (id, PERIOD valid_at) REFERENCES rooms(id, PERIOD valid_at)
+

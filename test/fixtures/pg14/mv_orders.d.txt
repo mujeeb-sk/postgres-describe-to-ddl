@@ -1,0 +1,9 @@
+          Materialized view "public.mv_orders"
+   Column    |  Type   | Collation | Nullable | Default 
+-------------+---------+-----------+----------+---------
+ customer_id | integer |           |          | 
+ n           | bigint  |           |          | 
+ total       | numeric |           |          | 
+Indexes:
+    "mv_orders_customer" UNIQUE, btree (customer_id)
+

@@ -1,0 +1,14 @@
+                                             Table "public.wide_chars"
++--------+---------+-----------+----------+-----------------+----------+-------------+--------------+-------------+
+| Column |  Type   | Collation | Nullable |     Default     | Storage  | Compression | Stats target | Description |
++--------+---------+-----------+----------+-----------------+----------+-------------+--------------+-------------+
+| id     | integer |           |          |                 | plain    |             |              |             |
+| 名前   | text    |           |          | 'x|y'::text     | extended |             |              |             |
+| 数量   | integer |           | not null |                 | plain    |             |              | 数|量       |
+| note   | text    |           |          | '日本|語'::text | extended |             |              |             |
+| face   | text    |           |          | '😀|x'::text    | extended |             |              |             |
++--------+---------+-----------+----------+-----------------+----------+-------------+--------------+-------------+
+Not-null constraints:
+    "wide_chars_数量_not_null" NOT NULL "数量"
+Access method: heap
+

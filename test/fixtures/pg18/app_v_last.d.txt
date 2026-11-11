@@ -1,0 +1,5 @@
+                 View "app.v_last"
+ Column |  Type   | Collation | Nullable | Default 
+--------+---------+-----------+----------+---------
+ id     | integer |           |          | 
+

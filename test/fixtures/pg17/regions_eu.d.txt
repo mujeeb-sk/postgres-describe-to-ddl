@@ -1,0 +1,7 @@
+           Table "public.regions_eu"
+ Column | Type | Collation | Nullable | Default 
+--------+------+-----------+----------+---------
+ code   | text |           |          | 
+ name   | text |           |          | 
+Partition of: regions FOR VALUES IN ('eu', 'uk', 'it''s')
+

@@ -1,0 +1,23 @@
+Table "public.orders"
+Column|Type|Collation|Nullable|Default
+order_id|bigint||not null|generated always as identity
+customer_id|integer||not null|
+qty|integer||not null|1
+price|numeric||not null|
+total|numeric|||generated always as (qty::numeric * price) stored
+during|tstzrange|||
+referrer_id|integer|||
+Indexes:
+    "orders_pkey" PRIMARY KEY, btree (order_id) DEFERRABLE INITIALLY DEFERRED
+    "no_overlap" EXCLUDE USING gist (customer_id WITH =, during WITH &&)
+Check constraints:
+    "orders_case_check" CHECK (
+CASE
+    WHEN qty > 10 THEN price < 100::numeric
+    ELSE true
+END)
+    "orders_qty_check" CHECK (qty > 0) NO INHERIT
+    "price_pos" CHECK (price > 0::numeric) NOT VALID
+Foreign-key constraints:
+    "orders_customer_id_fkey" FOREIGN KEY (customer_id) REFERENCES app.customers(id) ON DELETE CASCADE
+    "orders_referrer_fk" FOREIGN KEY (referrer_id) REFERENCES app.customers(id) MATCH FULL ON UPDATE SET NULL

@@ -1,0 +1,13 @@
+                                        Table "public.nn_part_1"
+ Column |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ a      | integer |           | not null |         | plain   |             |              | 
+ b      | integer |           | not null |         | plain   |             |              | 
+ c      | integer |           |          |         | plain   |             |              | 
+Partition of: nn_part FOR VALUES IN (1)
+Partition constraint: ((a IS NOT NULL) AND (a = 1))
+Not-null constraints:
+    "par_nn" NOT NULL "a" (inherited)
+    "nn_part_b_not_null" NOT NULL "b" (inherited)
+Access method: heap
+

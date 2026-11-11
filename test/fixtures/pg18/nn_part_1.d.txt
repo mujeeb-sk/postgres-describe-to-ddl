@@ -1,0 +1,8 @@
+             Table "public.nn_part_1"
+ Column |  Type   | Collation | Nullable | Default 
+--------+---------+-----------+----------+---------
+ a      | integer |           | not null | 
+ b      | integer |           | not null | 
+ c      | integer |           |          | 
+Partition of: nn_part FOR VALUES IN (1)
+

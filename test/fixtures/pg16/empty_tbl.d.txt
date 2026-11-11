@@ -1,0 +1,4 @@
+            Table "public.empty_tbl"
+ Column | Type | Collation | Nullable | Default 
+--------+------+-----------+----------+---------
+

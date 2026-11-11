@@ -1,0 +1,7 @@
+              Table "public.hashed_0"
+ Column |  Type   | Collation | Nullable | Default 
+--------+---------+-----------+----------+---------
+ id     | integer |           |          | 
+ data   | text    |           |          | 
+Partition of: hashed FOR VALUES WITH (modulus 2, remainder 0)
+

@@ -1,0 +1,4 @@
+CREATE MATERIALIZED VIEW public.mv_top
+AS
+ SELECT id
+   FROM "V Mid";

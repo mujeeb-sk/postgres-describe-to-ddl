@@ -1,0 +1,108 @@
+{
+  "name": "postgres-describe-to-ddl",
+  "displayName": "Postgres \\d to CREATE TABLE",
+  "description": "Turn psql \\d / \\d+ output into the CREATE TABLE or CREATE FOREIGN TABLE statement that recreates the table.",
+  "version": "1.0.0",
+  "publisher": "ShaikMohammadMujeeb",
+  "author": {
+    "name": "Mujeeb"
+  },
+  "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mujeeb-sk/postgres-describe-to-ddl.git"
+  },
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "postgres",
+    "postgresql",
+    "psql",
+    "ddl",
+    "create table"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "commands": [
+      {
+        "command": "describeToDdl.convert",
+        "title": "Convert \\d Output to CREATE TABLE",
+        "category": "Postgres"
+      },
+      {
+        "command": "describeToDdl.replace",
+        "title": "Replace \\d Output with CREATE TABLE",
+        "category": "Postgres"
+      },
+      {
+        "command": "describeToDdl.convertTerminalSelection",
+        "title": "Convert \\d Output to CREATE TABLE",
+        "category": "Postgres"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "describeToDdl.replace",
+          "when": "editorIsOpen && !editorReadonly"
+        },
+        {
+          "command": "describeToDdl.convertTerminalSelection",
+          "when": "false"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "describeToDdl.convert",
+          "when": "editorHasSelection",
+          "group": "9_cutcopypaste@9"
+        },
+        {
+          "command": "describeToDdl.replace",
+          "when": "editorHasSelection && !editorReadonly",
+          "group": "9_cutcopypaste@9"
+        }
+      ],
+      "terminal/context": [
+        {
+          "command": "describeToDdl.convertTerminalSelection",
+          "when": "terminalTextSelected",
+          "group": "9_describeToDdl"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Postgres \\d to CREATE TABLE",
+      "properties": {
+        "describeToDdl.serialColumns": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Write an integer column whose default is `nextval()` of its own sequence (`<table>_<column>_seq`) as `serial`, `bigserial` or `smallserial`. When off, the default is kept and a `CREATE SEQUENCE IF NOT EXISTS` is added before the table."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -watch -p .",
+    "test:unit": "npm run compile && node --test \"out/test/unit/*.test.js\"",
+    "test:roundtrip": "npm run compile && node out/test/roundtrip/run.js",
+    "test:integration": "npm run compile && node out/test/integration/runTests.js",
+    "vscode:prepublish": "npm run compile",
+    "package": "vsce package --no-dependencies --out .."
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "~1.90.0",
+    "@vscode/test-electron": "^2.4.1",
+    "@vscode/vsce": "^4.1.0",
+    "typescript": "^5.6.0"
+  }
+}

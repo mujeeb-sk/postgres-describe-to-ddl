@@ -1,0 +1,17 @@
+                                    Materialized view "public.mv_orders"
+   Column    |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+-------------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ customer_id | integer |           |          |         | plain   |             |              | 
+ n           | bigint  |           |          |         | plain   |             |              | 
+ total       | numeric |           |          |         | main    |             |              | 
+Indexes:
+    "mv_orders_customer" UNIQUE, btree (customer_id)
+View definition:
+ SELECT customer_id,
+    count(*) AS n,
+    sum(price) AS total
+   FROM orders
+  GROUP BY customer_id;
+Access method: heap
+Options: fillfactor=90
+

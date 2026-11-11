@@ -1,0 +1,57 @@
+test=# \d daily_metrics
+
+ metric_01 | bigint                      |           |          |         | 
+ metric_02 | bigint                      |           |          |         | 
+ metric_03 | bigint                      |           |          |         | 
+ metric_04 | bigint                      |           |          |         | 
+ metric_05 | bigint                      |           |          |         | 
+ metric_06 | bigint                      |           |          |         | 
+ metric_07 | bigint                      |           |          |         | 
+ metric_08 | bigint                      |           |          |         | 
+ metric_09 | bigint                      |           |          |         | 
+ metric_10 | bigint                      |           |          |         | 
+ metric_11 | bigint                      |           |          |         | 
+ metric_12 | bigint                      |           |          |         | 
+ metric_13 | bigint                      |           |          |         | 
+ metric_14 | bigint                      |           |          |         | 
+ metric_15 | bigint                      |           |          |         | 
+ metric_16 | bigint                      |           |          |         | 
+ metric_17 | bigint                      |           |          |         | 
+ metric_18 | bigint                      |           |          |         | 
+ metric_19 | bigint                      |           |          |         | 
+ metric_20 | bigint                      |           |          |         | 
+ metric_21 | bigint                      |           |          |         | 
+ metric_22 | bigint                      |           |          |         | 
+ metric_23 | bigint                      |           |          |         | 
+ metric_24 | bigint                      |           |          |         | 
+ metric_25 | bigint                      |           |          |         | 
+ metric_26 | bigint                      |           |          |         | 
+ metric_27 | bigint                      |           |          |         | 
+ metric_28 | bigint                      |           |          |         | 
+ metric_29 | bigint                      |           |          |         | 
+ metric_30 | bigint                      |           |          |         | 
+ metric_31 | bigint                      |           |          |         | 
+ metric_32 | bigint                      |           |          |         | 
+ metric_33 | bigint                      |           |          |         | 
+ metric_34 | bigint                      |           |          |         | 
+ metric_35 | bigint                      |           |          |         | 
+ metric_36 | bigint                      |           |          |         | 
+ metric_37 | bigint                      |           |          |         | 
+ metric_38 | bigint                      |           |          |         | 
+ metric_39 | bigint                      |           |          |         | 
+ metric_40 | double precision            |           |          |         | 
+ metric_41 | double precision            |           |          |         | 
+ metric_42 | double precision            |           |          |         | 
+ metric_43 | double precision            |           |          |         | 
+ metric_44 | double precision            |           |          |         | 
+ metric_45 | double precision            |           |          |         | 
+ metric_46 | double precision            |           |          |         | 
+ metric_47 | double precision            |           |          |         | 
+ metric_48 | double precision            |           |          |         | 
+ metric_49 | double precision            |           |          |         | 
+ metric_50 | bigint                      |           |          |         | 
+ metric_51 | bigint                      |           |          |         | 
+ metric_52 | bigint                      |           |          |         | 
+ metric_53 | bigint                      |           |          |         | 
+ metric_54 | bigint                      |           |          |         | 
+Server: analytics_server

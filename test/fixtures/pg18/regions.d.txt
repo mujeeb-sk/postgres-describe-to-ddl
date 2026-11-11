@@ -1,0 +1,8 @@
+       Partitioned table "public.regions"
+ Column | Type | Collation | Nullable | Default 
+--------+------+-----------+----------+---------
+ code   | text |           |          | 
+ name   | text |           |          | 
+Partition key: LIST (code)
+Number of partitions: 1 (Use \d+ to list them.)
+

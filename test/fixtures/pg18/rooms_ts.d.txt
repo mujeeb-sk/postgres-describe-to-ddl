@@ -1,0 +1,8 @@
+                Table "public.rooms_ts"
+  Column  |   Type    | Collation | Nullable | Default 
+----------+-----------+-----------+----------+---------
+ id       | integer   |           | not null | 
+ valid_at | daterange |           | not null | 
+Indexes:
+    "rooms_ts_pk" PRIMARY KEY (id, valid_at WITHOUT OVERLAPS), tablespace "Fast Space"
+

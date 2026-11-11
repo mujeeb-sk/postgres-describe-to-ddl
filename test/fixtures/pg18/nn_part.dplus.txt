@@ -1,0 +1,13 @@
+                                   Partitioned table "public.nn_part"
+ Column |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ a      | integer |           | not null |         | plain   |             |              | 
+ b      | integer |           | not null |         | plain   |             |              | 
+ c      | integer |           |          |         | plain   |             |              | 
+Partition key: LIST (a)
+Not-null constraints:
+    "par_nn" NOT NULL "a"
+    "nn_part_b_not_null" NOT NULL "b"
+Partitions: nn_part_1 FOR VALUES IN (1),
+            nn_part_2 FOR VALUES IN (2)
+

@@ -1,0 +1,9 @@
+                                          Table "public.loose"
+ Column |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ id     | integer |           |          |         | plain   |             |              | 
+Policies (row security disabled):
+    POLICY "loose_p"
+      USING ((id > 0))
+Access method: heap
+

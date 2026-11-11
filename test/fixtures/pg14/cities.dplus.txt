@@ -1,0 +1,12 @@
+                                          Table "public.cities"
+   Column   | Type | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+------------+------+-----------+----------+---------+----------+-------------+--------------+-------------
+ name       | text |           | not null |         | extended |             |              | 
+ population | real |           |          |         | plain    |             |              | 
+Check constraints:
+    "pop_check" CHECK (population >= 0::double precision)
+Child tables: capitals,
+              ft_child,
+              towns
+Access method: heap
+

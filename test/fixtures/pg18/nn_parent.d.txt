@@ -1,0 +1,10 @@
+                            Table "public.nn_parent"
+ Column |  Type   | Collation | Nullable |                Default                
+--------+---------+-----------+----------+---------------------------------------
+ a      | integer |           | not null | 
+ c      | integer |           | not null | 
+ d      | integer |           | not null | 
+ E e    | integer |           | not null | 
+ id     | integer |           | not null | nextval('nn_parent_id_seq'::regclass)
+Number of child tables: 1 (Use \d+ to list them.)
+

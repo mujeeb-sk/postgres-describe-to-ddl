@@ -1,0 +1,9 @@
+                            Table "public.gen_tbl"
+ Column |  Type   | Collation | Nullable |              Default               
+--------+---------+-----------+----------+------------------------------------
+ a      | integer |           |          | 
+ b      | integer |           |          | generated always as (a * 2)
+ c      | integer |           |          | generated always as (a + 1) stored
+Check constraints:
+    "gen_chk" CHECK (a > 0) NOT ENFORCED
+

@@ -1,0 +1,11 @@
+                  Table "public.notes_tbl"
+   Column   │  Type  │ Collation │ Nullable │    Default    
+────────────┼────────┼───────────┼──────────┼───────────────
+ id         │ intege…│           │          │ 
+            │…r      │           │          │ 
+ body       │ text   │           │          │ 
+ a rather l…│ text   │           │          │ 'a default th…
+…ong column…│        │           │          │…at is long en…
+… name      │        │           │          │…ough to be wr…
+            │        │           │          │…apped'::text
+

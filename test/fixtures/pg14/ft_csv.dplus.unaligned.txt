@@ -1,0 +1,9 @@
+Foreign table "public.ft_csv"
+Column|Type|Collation|Nullable|Default|FDW options|Storage|Stats target|Description
+id|integer||not null||(force_not_null 'true')|plain|200|
+name|x|text|||||extended||
+note|text|C||'x|y'::text||extended||a foreign column
+Check constraints:
+    "ft_chk" CHECK (id > 0)
+Server: file_srv
+FDW options: (filename '/tmp/x.csv', format 'csv', delimiter '|', header 'true')

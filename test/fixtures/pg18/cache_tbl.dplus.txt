@@ -1,0 +1,17 @@
+                                             Unlogged table "public.cache_tbl"
+ Column  |           Type           | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+---------+--------------------------+-----------+----------+---------+----------+-------------+--------------+-------------
+ k       | text                     |           | not null |         | extended |             |              | 
+ v       | text                     |           |          |         | extended |             |              | 
+ expires | timestamp with time zone |           |          |         | plain    |             |              | 
+ parent  | text                     |           |          |         | extended |             |              | 
+Indexes:
+    "cache_tbl_pkey" PRIMARY KEY, btree (k)
+Foreign-key constraints:
+    "cache_tbl_parent_fkey" FOREIGN KEY (parent) REFERENCES cache_tbl(k)
+Referenced by:
+    TABLE "cache_tbl" CONSTRAINT "cache_tbl_parent_fkey" FOREIGN KEY (parent) REFERENCES cache_tbl(k)
+Not-null constraints:
+    "cache_tbl_k_not_null" NOT NULL "k"
+Access method: heap
+

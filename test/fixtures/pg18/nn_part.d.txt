@@ -1,0 +1,9 @@
+        Partitioned table "public.nn_part"
+ Column |  Type   | Collation | Nullable | Default 
+--------+---------+-----------+----------+---------
+ a      | integer |           | not null | 
+ b      | integer |           | not null | 
+ c      | integer |           |          | 
+Partition key: LIST (a)
+Number of partitions: 2 (Use \d+ to list them.)
+

@@ -1,0 +1,42 @@
+# Publishes the extension to the VS Code Marketplace when a version tag (v1.2.3) is pushed.
+# Signs in with the Marketplace's Trusted Publishing (OIDC), so no token is stored in the repository.
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write # exchanged for a short-lived Marketplace credential
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - name: Check the tag matches the version in package.json
+        run: |
+          version="v$(node -p "require('./package.json').version")"
+          if [ "$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match version $version in package.json"
+            exit 1
+          fi
+
+      - run: npm ci
+
+      - run: npm run test:unit
+
+      - name: Publish to the Marketplace
+        run: npx vsce publish --no-dependencies --oidc

@@ -1,0 +1,12 @@
+        Table "public.measurements_2025_h1"
+ Column  |  Type   | Collation | Nullable | Default 
+---------+---------+-----------+----------+---------
+ id      | bigint  |           | not null | 
+ logdate | date    |           | not null | 
+ region  | text    |           |          | 
+ val     | integer |           |          | 0
+Partition of: measurements_2025 FOR VALUES FROM ('2025-01-01') TO ('2025-07-01')
+Indexes:
+    "measurements_2025_h1_pkey" PRIMARY KEY, btree (id, logdate)
+    "measurements_2025_h1_region_idx" btree (region)
+

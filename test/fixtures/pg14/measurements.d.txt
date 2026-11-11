@@ -1,0 +1,13 @@
+      Partitioned table "public.measurements"
+ Column  |  Type   | Collation | Nullable | Default 
+---------+---------+-----------+----------+---------
+ id      | bigint  |           | not null | 
+ logdate | date    |           | not null | 
+ region  | text    |           |          | 
+ val     | integer |           |          | 0
+Partition key: RANGE (logdate)
+Indexes:
+    "measurements_pkey" PRIMARY KEY, btree (id, logdate)
+    "measurements_region_idx" btree (region)
+Number of partitions: 3 (Use \d+ to list them.)
+

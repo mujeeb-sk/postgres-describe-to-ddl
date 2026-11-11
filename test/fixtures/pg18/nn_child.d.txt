@@ -1,0 +1,11 @@
+                             Table "public.nn_child"
+ Column |  Type   | Collation | Nullable |                Default                
+--------+---------+-----------+----------+---------------------------------------
+ a      | integer |           | not null | 
+ c      | integer |           | not null | 
+ d      | integer |           | not null | 
+ E e    | integer |           | not null | 
+ id     | integer |           | not null | nextval('nn_parent_id_seq'::regclass)
+ z      | integer |           | not null | 
+Inherits: nn_parent
+

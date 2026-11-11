@@ -1,0 +1,9 @@
+               Table "public.cities"
+   Column   | Type | Collation | Nullable | Default 
+------------+------+-----------+----------+---------
+ name       | text |           | not null | 
+ population | real |           |          | 
+Check constraints:
+    "pop_check" CHECK (population >= 0::double precision)
+Number of child tables: 3 (Use \d+ to list them.)
+

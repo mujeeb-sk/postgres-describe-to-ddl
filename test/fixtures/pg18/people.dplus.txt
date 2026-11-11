@@ -1,0 +1,13 @@
+                                          Table "public.people"
+ Column |  Type   | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+----------+-------------+--------------+-------------
+ name   | text    |           | not null |         | extended |             |              | 
+ age    | integer |           | not null | 0       | plain    |             |              | 
+Indexes:
+    "people_pkey" PRIMARY KEY, btree (name)
+Not-null constraints:
+    "people_name_not_null" NOT NULL "name"
+    "people_age_not_null" NOT NULL "age"
+Typed table of type: person_t
+Access method: heap
+

@@ -1,0 +1,8 @@
+               Table "public.loose"
+ Column |  Type   | Collation | Nullable | Default 
+--------+---------+-----------+----------+---------
+ id     | integer |           |          | 
+Policies (row security disabled):
+    POLICY "loose_p"
+      USING ((id > 0))
+

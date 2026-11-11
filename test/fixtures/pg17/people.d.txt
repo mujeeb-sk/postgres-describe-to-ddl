@@ -1,0 +1,9 @@
+               Table "public.people"
+ Column |  Type   | Collation | Nullable | Default 
+--------+---------+-----------+----------+---------
+ name   | text    |           | not null | 
+ age    | integer |           | not null | 0
+Indexes:
+    "people_pkey" PRIMARY KEY, btree (name)
+Typed table of type: person_t
+

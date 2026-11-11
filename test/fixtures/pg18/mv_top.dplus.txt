@@ -1,0 +1,9 @@
+                                   Materialized view "public.mv_top"
+ Column |  Type   | Collation | Nullable | Default | Storage | Compression | Stats target | Description 
+--------+---------+-----------+----------+---------+---------+-------------+--------------+-------------
+ id     | integer |           |          |         | plain   |             |              | 
+View definition:
+ SELECT id
+   FROM "V Mid";
+Access method: heap
+

@@ -1,0 +1,12 @@
+                                           Table "public.rooms_ts"
+  Column  |   Type    | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+----------+-----------+-----------+----------+---------+----------+-------------+--------------+-------------
+ id       | integer   |           | not null |         | plain    |             |              | 
+ valid_at | daterange |           | not null |         | extended |             |              | 
+Indexes:
+    "rooms_ts_pk" PRIMARY KEY (id, valid_at WITHOUT OVERLAPS), tablespace "Fast Space"
+Not-null constraints:
+    "rooms_ts_id_not_null" NOT NULL "id"
+    "rooms_ts_valid_at_not_null" NOT NULL "valid_at"
+Access method: heap
+

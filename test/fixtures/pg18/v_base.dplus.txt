@@ -1,0 +1,10 @@
+                                   View "public.v_base"
+ Column |          Type          | Collation | Nullable | Default | Storage  | Description 
+--------+------------------------+-----------+----------+---------+----------+-------------
+ id     | integer                |           |          |         | plain    | 
+ email  | character varying(255) |           |          |         | extended | 
+View definition:
+ SELECT id,
+    email
+   FROM app.customers;
+

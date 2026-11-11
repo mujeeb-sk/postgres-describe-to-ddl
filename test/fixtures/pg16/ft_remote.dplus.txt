@@ -1,0 +1,10 @@
+                                         Foreign table "public.ft_remote"
+ Column |  Type   | Collation | Nullable | Default |      FDW options      | Storage  | Stats target | Description 
+--------+---------+-----------+----------+---------+-----------------------+----------+--------------+-------------
+ a      | integer |           |          |         |                       | plain    |              | 
+ b      | text    |           |          |         | (column_name 'B col') | extended |              | 
+Triggers:
+    ft_trg BEFORE INSERT ON ft_remote FOR EACH ROW EXECUTE FUNCTION trg_fn()
+Server: Remote Srv
+FDW options: (schema_name 'public', table_name 'remote t')
+
